@@ -43,35 +43,50 @@ class StandardBoard:
     def _parse_state(self, board_str):
         def convert(cell_str):
             if cell_str.startswith('G'):
-                return Ground()
+                if '!' in cell_str:
+                    return Ground(special=Catastrophe())
+                elif '?' in cell_str:
+                    civ_type = cell_str[2]
+                    if civ_type == 's':
+                        return Ground(piece=SettlementCiv(), special=Unification())
+                    elif civ_type == 't':
+                        return Ground(piece=TempleCiv(), special=Unification())
+                    elif civ_type == 'm':
+                        return Ground(piece=MerchantCiv(), special=Unification())
+                else:
+                    return Ground()
             elif cell_str.startswith('R'):
-                return River()
+                if '!' in cell_str:
+                    return River(special=Catastrophe())
+                elif '?' in cell_str:
+                    return River(piece=FarmCiv(), special=Unification()) 
+                else:
+                    return River()
             elif cell_str.startswith('s'):
-                return SettlementCiv() 
+                return Ground(piece=SettlementCiv())
             elif cell_str.startswith('t'):
-                return TempleCiv()
+                return Ground(piece=TempleCiv())
             elif cell_str.startswith('f'):
-                return FarmCiv()
+                return River(piece=FarmCiv())
             elif cell_str.startswith('m'):
-                return MerchantCiv()
-            elif cell_str.startswith('!'):
-                return Catastrophe()
-            elif cell_str.startswith('?'):
-                return Unification()
+                return Ground(piece=MerchantCiv())
             elif cell_str.startswith('T'):
-                return TempleCiv(is_treasure=True)
+                return Ground(piece=TempleCiv(is_treasure=True))
             elif cell_str.startswith('r'):
                 ruler_type = cell_str[2]
                 ruler_player_no = cell_str[1]
                 if ruler_type == 's':
-                    return SettlementRuler(ruler_player_no)
+                    return Ground(piece=SettlementRuler(ruler_player_no))
                 elif ruler_type == 't':
-                    return TempleRuler(ruler_player_no)
+                    return Ground(piece=TempleRuler(ruler_player_no))
                 elif ruler_type == 'f':
-                    return FarmRuler(ruler_player_no)
+                    return River(piece=FarmRuler(ruler_player_no))
                 elif ruler_type == 'm':
-                    return MerchantRuler(ruler_player_no)
+                    return Ground(piece=MerchantRuler(ruler_player_no))
             elif cell_str.startswith('M'):
                 pass
 
         self.cells = [ convert(x) for x in board_str.split('|')]
+
+    def save(self):
+        self.board.save()
