@@ -2,7 +2,9 @@ class Special:
     pass
 
 class Unification(Special):
-    pass
+    def db_form(self):
+        return '?'
 
 class Catastrophe(Special):
-    pass
+    def db_form(self):
+        return '!'

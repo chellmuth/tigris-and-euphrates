@@ -1,9 +1,11 @@
 class Cell:
-    self.piece = None
-    self.special = None
+    piece = None
+    special = None
 
 class Ground(Cell):
-    pass
+    def db_form(self):
+        return 'G'
 
 class River(Cell):
-    pass
+    def db_form(self):
+        return 'R'
