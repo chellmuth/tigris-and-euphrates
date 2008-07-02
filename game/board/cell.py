@@ -15,6 +15,12 @@ class Cell:
 
         special + piece
 
+    def has_piece(self):
+        return self.piece is not None
+
+    def has_ruler(self):
+        return self.has_piece() and self.piece.is_ruler
+
 class Ground(Cell):
     def db_form(self):
         special = self.special and self.special.db_form() or ''
