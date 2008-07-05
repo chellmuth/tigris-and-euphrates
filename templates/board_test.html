@@ -1,0 +1,202 @@
+<html>
+<head>
+</head>
+<script type="text/javascript" src="http://localhost/media/js/jquery-1.2.6.js"></script>
+<script type="text/javascript" src="http://localhost/media/js/ui.core.js"></script>
+<script type="text/javascript" src="http://localhost/media/js/ui.draggable.js"></script>
+<script type="text/javascript" src="http://localhost/media/js/ui.droppable.js"></script>
+
+<script>
+function json_callback(data) {
+  $.each(data[0]['legal_ground_moves'], function(i, item) { config_drop(item, 'ground'); });
+  $.each(data[1]['legal_river_moves'], function(i, item) { config_drop(item, 'river'); });
+
+  $.each(data[2]['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
+}
+
+function set_civilization_tiles(index, civ_type) {
+  color = 'error';
+  type = 'ground';
+  if (civ_type[0] == 'f') {
+    color = 'farm';
+    type = 'river';
+  } else if (civ_type[0] == 't') {
+    color = 'temple';
+  } else if (civ_type[0] == 'm') {
+    color = 'merchant';
+  } else if (civ_type[0] == 's') {
+    color = 'settlement';
+  }
+
+  $("#hand" + index).removeAttr('class').addClass('civ').addClass(color).addClass(type);
+}
+
+function config_drop(item, class) {
+  $("#drop" + item).droppable({
+       accept: "." + class,
+       activeClass: 'droppable-active',
+       hoverClass: 'droppable-hover',
+       drop: function(ev, ui) {
+          piece = $(ui.draggable).get()[0].id;
+          cell = $(this).get()[0].id;
+          $.getJSON("http://localhost:8000/drop_civ/" + piece + "/" + cell + "/", function (data) { json_callback(data); });
+       }
+  });
+}
+
+function call_json() {
+  $.getJSON("http://localhost:8000/game_state_json/", function (data) { json_callback(data); });
+}
+
+  $(document).ready(function(){
+    $(".ground").draggable({revert: true});
+    $(".river").draggable({revert: true});
+
+    $("#hand0").draggable({revert: true});
+    $("#hand1").draggable({revert: true});
+    $("#hand2").draggable({revert: true});
+    $("#hand3").draggable({revert: true});
+    $("#hand4").draggable({revert: true});
+    $("#hand5").draggable({revert: true});
+
+    call_json();
+  });
+  
+{% for js in js_script %}
+   {{ js }}
+{% endfor %}
+</script>
+
+<style>
+{% for css in css_classes %}
+   {{ css }}
+{% endfor %}
+
+.ground { 
+   position: absolute;
+   top: 5px;
+   left: 905px;
+   border: 2px solid #0090DF;
+   background-color: #68BFEF;
+   width: 50px; 
+   height: 50px;
+   margin: 10px;
+   z-index: 100;
+}
+
+.river { 
+   position: absolute;
+   top: 55px;
+   left: 905px;
+   border: 2px solid #0090DF;
+   background-color: #68BFEF;
+   width: 50px; 
+   height: 50px;
+   margin: 10px;
+   z-index: 100;
+}
+
+
+.cell-ground {
+   background-color: grey;
+}
+.cell-river {
+   background-color: blue;
+}
+
+.droppable-active {
+}
+.droppable-hover {
+   background-color: yellow;
+}
+
+#hand0 {
+  position: absolute;
+  top: 600px;
+  left: 200px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand1 {
+  position: absolute;
+  top: 600px;
+  left: 250px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand2 {
+  position: absolute;
+  top: 600px;
+  left: 300px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand3 {
+  position: absolute;
+  top: 600px;
+  left: 350px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand4 {
+  position: absolute;
+  top: 600px;
+  left: 400px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand5 {
+  position: absolute;
+  top: 600px;
+  left: 450px;
+  height: 50px;
+  width: 50px;
+}
+
+.civ {
+  width: 50px;
+  height: 50px;
+  background-color: grey;
+}
+
+.settlement {
+  background-color: black;
+}
+
+.temple {
+  background-color: red;
+}
+
+.merchant {
+  background-color: green;
+}
+
+.farm {
+  background-color: blue;
+}
+
+
+</style>
+
+<body>
+<div class="ground" id="civ1">ground!</div>
+<div class="river" id="civ2">river!</div>
+
+<div id="hand0" class="civ settlement">A</div>
+<div id="hand1" class="civ temple">B</div>
+<div id="hand2" class="civ farm">C</div>
+<div id="hand3" class="civ merchant">D</div>
+<div id="hand4" class="civ">E</div>
+<div id="hand5" class="civ">F</div>
+
+{% for div in div_decls %}
+   {{ div }}
+{% endfor %}
+
+</body>
+</html>

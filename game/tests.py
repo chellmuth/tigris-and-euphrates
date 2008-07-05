@@ -1,8 +1,44 @@
 import unittest
-from game.models import Game
+from game.models import Game, CivBag
 from game.board import StandardBoard
 from game.board.cell import Ground, River
 from game.board import identify_groups, identify_kingdoms, get_legal_civ_moves
+
+class CivBagTestCase(unittest.TestCase):
+    def setUp(self):
+        self.game = Game.objects.create()
+
+    def testBag(self):
+        bag = CivBag(self.game)
+        self.assertEquals([ bag.temple_start, bag.temple_remaining,
+                            bag.farm_start, bag.farm_remaining,
+                            bag.merchant_start, bag.merchant_remaining,
+                            bag.settlement_start, bag.settlement_remaining ],
+                          [ 57, 57,
+                            36, 36,
+                            30, 30,
+                            30, 30 ])
+
+        list = []
+        for i in range(57 + 36 + 30 + 30):
+            list.append(bag.get_piece())
+
+        for i in range(57):
+            if not [ 1 for civ_piece in list if civ_piece.unique_id() == ('t' + str(i)) ]:
+                self.assertEquals(0,1)
+        for i in range(36):
+            if not [ 1 for civ_piece in list if civ_piece.unique_id() == ('f' + str(i)) ]:
+                self.assertEquals(0,1)
+        for i in range(30):
+            if not [ 1 for civ_piece in list if civ_piece.unique_id() == ('m' + str(i)) ]:
+                self.assertEquals(0,1)
+        for i in range(30):
+            if not [ 1 for civ_piece in list if civ_piece.unique_id() == ('s' + str(i)) ]:
+                self.assertEquals(0,1)
+
+        print [ piece.unique_id() for piece in list]
+                
+                
 
 class StandardBoardTestCase(unittest.TestCase):
     def setUp(self):

@@ -11,7 +11,7 @@
   <script>
   $(document).ready(function(){
     $(".block").draggable({revert: true});
-$(".drop").droppable({
+$("#drop1").droppable({
 	accept: ".block",
 	activeClass: 'droppable-active',
 	hoverClass: 'droppable-hover',
@@ -19,6 +19,16 @@ $(".drop").droppable({
 		$(this).append("<br>Dropped!");
 	}
 });
+$("#drop2").droppable({
+	accept: ".block",
+	activeClass: 'droppable-active',
+	hoverClass: 'droppable-hover',
+	drop: function(ev, ui) {
+		$(this).append("<br>Dropped!");
+	}
+});
+
+
   });
   </script>
   <style>.block { 
@@ -32,17 +42,52 @@ $(".drop").droppable({
    margin: 10px;
    z-index: 100;
 }
-.drop { 
+#drop1 { 
 	background-color: #e9b96e;
 	border: 3px double #c17d11;
-   width: 150px; 
-   height: 70px;
+   width: 20px;
+   height: 20px;
    margin: 10px; 
   position: absolute;
   top: 5px;
   right: 5px;
   opacity: 0.7;
 }
+#drop2 { 
+	background-color: #e9b96e;
+	border: 3px double #c17d11;
+   width: 20px;
+   height: 20px;
+   margin: 10px; 
+  position: absolute;
+  top: 80px;
+  right: 5px;
+  opacity: 0.7;
+}
+#drop3 { 
+	background-color: #e9b96e;
+	border: 3px double #c17d11;
+   width: 20px
+   height: 20px;
+   margin: 10px; 
+  position: absolute;
+  top: 155px;
+  right: 5px;
+  opacity: 0.7;
+}
+#drop4 { 
+	background-color: #e9b96e;
+	border: 3px double #c17d11;
+   width: 20px;
+   height: 20px;
+   margin: 10px; 
+  position: absolute;
+  top: 230px;
+  right: 5px;
+  opacity: 0.7;
+}
+
+
 .droppable-active {
 	opacity: 1.0;
 }
@@ -58,7 +103,11 @@ $(".drop").droppable({
     <p>Thanks for visiting my site.</p>
     {% endblock %}
 <div class="block">drag me!</div>
-<div class="drop">drop on me!</div>
+<div id="drop1">drop on me!</div>
+<div id="drop2">drop on me!</div>
+<div id="drop3">drop on me!</div>
+<div id="drop4">drop on me!</div>
+
 
 </body>
 </html>

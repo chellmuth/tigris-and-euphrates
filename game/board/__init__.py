@@ -118,7 +118,7 @@ def identify_groups(board):
         if cell_no_visited[cell_no]:
             return
      
-        cur_row = cell_no / board.rows
+        cur_row = cell_no / board.columns
         cur_col = cell_no % board.columns
      
         cell_no_visited[cell_no] = group_count
@@ -171,7 +171,7 @@ def get_legal_civ_moves(board):
         if kingdom_id == 0:
             adjacent_kindoms = set()
 
-            cur_row = cell_no / board.rows
+            cur_row = cell_no / board.columns
             cur_col = cell_no % board.columns
             
             top_index = cell_no - board.columns
@@ -194,3 +194,17 @@ def get_legal_civ_moves(board):
             if len(adjacent_kindoms) < 2:
                 legal_spots.append(cell_no)
     return legal_spots
+
+def split_legal_moves_by_type(board):
+    legal_moves = get_legal_civ_moves(board)
+    legal_ground = []
+    legal_river = []
+
+    for cell_no in legal_moves:
+        if board[cell_no].is_ground:
+            legal_ground.append(cell_no)
+        else:
+            legal_river.append(cell_no)
+
+    return { 'ground': legal_ground,
+             'river': legal_river }

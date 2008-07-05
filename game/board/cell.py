@@ -1,6 +1,7 @@
 class Cell:
     piece = None
     special = None
+    is_ground = False
 
     def __init__(self, piece=None, special=None):
         self.piece = piece
@@ -21,7 +22,12 @@ class Cell:
     def has_ruler(self):
         return self.has_piece() and self.piece.is_ruler
 
+    def css_class_name(self):
+        return self.piece.css_class_name()
+
 class Ground(Cell):
+    is_ground = True
+
     def db_form(self):
         special = self.special and self.special.db_form() or ''
         piece = self.piece and self.piece.db_form() or ''
