@@ -10,8 +10,16 @@
 function json_callback(data) {
   $.each(data[0]['legal_ground_moves'], function(i, item) { config_drop(item, 'ground'); });
   $.each(data[1]['legal_river_moves'], function(i, item) { config_drop(item, 'river'); });
-
   $.each(data[2]['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
+  $.each(data[3]['temple_civ'], function(i, cell_no) { place_civ_on_board('temple', cell_no); });
+  $.each(data[4]['settlement_civ'], function(i, cell_no) { place_civ_on_board('settlement', cell_no); });
+  $.each(data[5]['farm_civ'], function(i, cell_no) { place_civ_on_board('farm', cell_no); });
+  $.each(data[6]['merchant_civ'], function(i, cell_no) { place_civ_on_board('merchant', cell_no); });
+
+}
+
+function place_civ_on_board(civ_type, cell_no) {
+  $("#drop" + cell_no).removeClass('temple').removeClass('settlement').removeClass('farm').removeClass('merchant').addClass(civ_type);
 }
 
 function set_civilization_tiles(index, civ_type) {
@@ -95,7 +103,6 @@ function call_json() {
    margin: 10px;
    z-index: 100;
 }
-
 
 .cell-ground {
    background-color: grey;

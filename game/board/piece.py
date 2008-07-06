@@ -1,7 +1,6 @@
 class Piece:
     is_ruler = False
 
-
 class Civilization(Piece):
     is_treasure = False
 

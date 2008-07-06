@@ -50,8 +50,6 @@ class CivBagTestCase(unittest.TestCase):
 
         print [ piece.unique_id() for piece in list]
                 
-                
-
 class StandardBoardTestCase(unittest.TestCase):
     def setUp(self):
         self.game = Game.objects.create()

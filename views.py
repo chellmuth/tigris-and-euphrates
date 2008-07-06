@@ -1,42 +1,47 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 
-from game.models import Game, CivBag
+from game.models import Game, CivBag, Hand, Player
 from game.board import StandardBoard
 from game.board import split_legal_moves_by_type
-from game.board.piece import SettlementCiv
+from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv
 
-import datetime
-
-def current_datetime(request):
-    current_date = datetime.datetime.now()
-    return render_to_response('current_datetime.html', locals())
-
-def hours_ahead(request, offset):
-    hour_offset = int(offset)
-    next_time = datetime.datetime.now() + datetime.timedelta(hours=hour_offset)
-    return render_to_response('hours_ahead.html', locals())
-
-def drop_civ(request,civ,cell):
+def _convert(str):
+    if str[0] == 's':
+        return SettlementCiv()
+    if str[0] == 'm':
+        return MerchantCiv()
+    if str[0] == 'f':
+        return FarmCiv()
+    if str[0] == 't':
+        return TempleCiv()
+    
+def drop_civ(request, civ, cell):
     civ = int(civ)
     cell = int(cell)
 
-    g = Game()
-    board = StandardBoard(g)
-
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
+    p = Player.objects.filter(user_name='cjh').get()
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+    
     legal_moves = split_legal_moves_by_type(board)
     if cell in legal_moves['ground']:
-        board[cell].piece = SettlementCiv()
+        board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
+        hand.swap(civ)
+        
+    board.save()
+    hand.save()
 
-    return HttpResponse('hi')
+    return game_state_json(request)
 
 def print_custom_css_board(request, rows, cols, size):
     css_classes = []
     div_decls = []
     js_script = []
 
-    g = Game()
-    board = StandardBoard(g)
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
 
     for cell_no in range(rows * cols):
         row = cell_no / cols
@@ -53,8 +58,6 @@ left: %spx;
         css_classes.append(css_string)
 
         cell_class = board[cell_no].is_ground and 'cell-ground' or 'cell-river'
-        if board[cell_no].has_piece():
-            cell_class += ' ' + board[cell_no].css_class_name()
             
         div_decls.append('<div id="drop%s" class="%s"></div>' % (cell_no, cell_class))
 
@@ -67,20 +70,25 @@ left: %spx;
     return render_to_response('board_test.html', locals())
 
 def game_state_json(request):
-    g = Game()
-    board = StandardBoard(g)
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
     moves = split_legal_moves_by_type(board)
 
-    bag = CivBag(g)
-    tiles = [ bag.get_piece(),bag.get_piece(),bag.get_piece(),bag.get_piece(),bag.get_piece(),bag.get_piece() ]
-    tiles = [ tile.unique_id() for tile in tiles]
+    p = Player.objects.filter(user_name='cjh').get()
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+    
+    tiles = [ hand.piece0, hand.piece1, hand.piece2, hand.piece3, hand.piece4, hand.piece5 ]
     str = """
 [
   { "legal_ground_moves": %s },
   { "legal_river_moves": %s },
-  { "player_hand": %s }
+  { "player_hand": %s },
+  { "temple_civ": %s },
+  { "settlement_civ": %s },
+  { "farm_civ": %s },
+  { "merchant_civ": %s }
 ]
-""" % (moves['ground'], moves['river'], tiles)
+""" % (moves['ground'], moves['river'], tiles, board.get_cell_no_for_civ('t'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'))
     
     print str
 

@@ -26,6 +26,11 @@ class Hand(models.Model):
     piece4 = models.CharField(maxlength=3)
     piece5 = models.CharField(maxlength=3)
 
+    def swap(self, piece_no):
+        bag = CivBag.objects.filter(game=self.game).get()
+        new_piece = bag.get_piece()
+        self.__setattr__('piece' + str(piece_no), new_piece.unique_id())
+        
 class Board(models.Model):
     game = models.ForeignKey(Game)
     move_no = models.IntegerField()

@@ -25,7 +25,7 @@ class StandardBoard:
     def __init__(self, game, move_no=0):
         self.board = None
         if move_no:
-            self.board = Board.objects.filter(game=game, move_no=move_no)
+            self.board = Board.objects.filter(game=game, move_no=move_no).get()
             if not self.board:
                 # raise
                 pass
@@ -88,7 +88,15 @@ class StandardBoard:
 
         self.cells = [ convert(x) for x in board_str.split('|')]
 
+    def get_cell_no_for_civ(self, color):
+        cell_nos = []
+        for cell, cell_no in zip(self.cells, range(self.rows * self.columns)):
+            if cell.piece and (cell.piece.db_form() == color):
+                cell_nos.append(cell_no)
+        return cell_nos
+
     def save(self):
+        self.board.board = self._db_form()
         self.board.save()
 
     def __iter__(self):
@@ -102,6 +110,9 @@ class StandardBoard:
 
     def __setitem__(self, x, y):
         return self.cells.__setitem__(x, y)
+
+    def add_civ(self, cell_no, civ):
+        self.cells[cell_no].piece = civ
 
 def identify_groups(board):
     """Give a board
