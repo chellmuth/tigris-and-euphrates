@@ -1,8 +1,20 @@
 import unittest
-from game.models import Game, CivBag
+from game.models import Game, CivBag, Player
 from game.board import StandardBoard
 from game.board.cell import Ground, River
 from game.board import identify_groups, identify_kingdoms, get_legal_civ_moves
+
+class GameIntegrityTestCase(unittest.TestCase):
+    def testGame(self):
+        p1 = Player.objects.create(user_name = 'P1')
+        p2 = Player.objects.create(user_name = 'P2')
+        p3 = Player.objects.create(user_name = 'P3')
+        p4 = Player.objects.create(user_name = 'P4')
+
+        game = Game.objects.create(player_1=p1, player_2=p2, player_3=p3, player_4=p4, turn=0)
+        board = StandardBoard(game)
+        bag = CivBag(game)
+        
 
 class CivBagTestCase(unittest.TestCase):
     def setUp(self):

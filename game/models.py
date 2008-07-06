@@ -3,8 +3,28 @@ from game.board.piece import SettlementCiv, FarmCiv, MerchantCiv, TempleCiv
 
 import random
 
+class Player(models.Model):
+    user_name = models.CharField(maxlength=100)
+
 class Game(models.Model):
-    pass
+    player_1 = models.ForeignKey(Player, related_name='player_1_player', blank=True, null=True)
+    player_2 = models.ForeignKey(Player, related_name='player_2_player', blank=True, null=True)
+    player_3 = models.ForeignKey(Player, related_name='player_3_player', blank=True, null=True)
+    player_4 = models.ForeignKey(Player, related_name='player_4_player', blank=True, null=True)
+
+    turn = models.IntegerField(default=0)
+
+class Hand(models.Model):
+    player = models.ForeignKey(Player)
+    turn_no = models.IntegerField()
+    game = models.ForeignKey(Game)
+
+    piece0 = models.CharField(maxlength=3)
+    piece1 = models.CharField(maxlength=3)
+    piece2 = models.CharField(maxlength=3)
+    piece3 = models.CharField(maxlength=3)
+    piece4 = models.CharField(maxlength=3)
+    piece5 = models.CharField(maxlength=3)
 
 class Board(models.Model):
     game = models.ForeignKey(Game)
