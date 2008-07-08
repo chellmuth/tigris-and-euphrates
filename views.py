@@ -61,12 +61,6 @@ left: %spx;
             
         div_decls.append('<div id="drop%s" class="%s"></div>' % (cell_no, cell_class))
 
-        accept_class = ''
-        if cell_no %8 == 0:
-            accept_class = '.river'
-        else:
-            accept_class = '.ground'
-
     return render_to_response('board_test.html', locals())
 
 def game_state_json(request):
@@ -96,3 +90,40 @@ def game_state_json(request):
     resp.headers['Content-Type'] = 'text/javascript'
 
     return resp
+
+def create_board(request):
+    css_classes = []
+    div_decls = []
+
+    g = Game.objects.create()
+    board = StandardBoard(g)
+
+    rows = board.rows
+    cols = board.columns
+    size = 50
+
+    moves = split_legal_moves_by_type(board)
+    config_drop_str = """
+$.each(%s, function(i, item) { config_drop(item, 'ground'); });
+$.each(%s, function(i, item) { config_drop(item, 'river'); });
+""" % (moves['ground'], moves['river'])
+    
+    for cell_no in range(rows * cols):
+        row = cell_no / cols
+        col = cell_no % cols
+
+        css_string = """#drop%s {
+width: %spx;
+height: %spx;
+position: absolute;
+top: %spx;
+left: %spx;
+}
+""" % (cell_no, size, size, row * size, col * size)
+        css_classes.append(css_string)
+
+        cell_class = board[cell_no].is_ground and 'cell-ground' or 'cell-river'
+            
+        div_decls.append('<div id="drop%s" class="%s"></div>' % (cell_no, cell_class))
+
+    return render_to_response('create_situation.html', locals())

@@ -12,11 +12,13 @@ class Game(models.Model):
     player_3 = models.ForeignKey(Player, related_name='player_3_player', blank=True, null=True)
     player_4 = models.ForeignKey(Player, related_name='player_4_player', blank=True, null=True)
 
-    turn = models.IntegerField(default=0)
-
+    turn_no = models.IntegerField(default=0)
+    action_no = models.IntegerField(default=0)
+    
 class Hand(models.Model):
     player = models.ForeignKey(Player)
     turn_no = models.IntegerField()
+    action_no = models.IntegerField()
     game = models.ForeignKey(Game)
 
     piece0 = models.CharField(maxlength=3)
@@ -30,10 +32,12 @@ class Hand(models.Model):
         bag = CivBag.objects.filter(game=self.game).get()
         new_piece = bag.get_piece()
         self.__setattr__('piece' + str(piece_no), new_piece.unique_id())
+        bag.save()
         
 class Board(models.Model):
     game = models.ForeignKey(Game)
-    move_no = models.IntegerField()
+    turn_no = models.IntegerField()
+    action_no = models.IntegerField()
     rows = models.IntegerField()
     columns = models.IntegerField()
     board = models.TextField()

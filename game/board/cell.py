@@ -19,6 +19,9 @@ class Cell:
     def has_piece(self):
         return self.piece is not None
 
+    def has_special(self):
+        return self.special is not None
+
     def has_ruler(self):
         return self.has_piece() and self.piece.is_ruler
 

@@ -1,0 +1,171 @@
+<html>
+<head>
+</head>
+<script type="text/javascript" src="http://localhost/media/js/jquery-1.2.6.js"></script>
+<script type="text/javascript" src="http://localhost/media/js/ui.core.js"></script>
+<script type="text/javascript" src="http://localhost/media/js/ui.draggable.js"></script>
+<script type="text/javascript" src="http://localhost/media/js/ui.droppable.js"></script>
+
+<script>
+                      
+function export_board() {
+  var board = [];
+  for (i=0;i<176;i++) {
+    board[i] = get_civ_class($("#drop" + i));
+  }
+  alert(board);
+}
+
+function get_civ_class(cell) {
+  if (cell.hasClass('settlement')) {
+    return 's';
+  } else if (cell.hasClass('temple')) {
+    return 't';
+  } else if (cell.hasClass('farm')) {
+    return 'f';
+  } else if (cell.hasClass('merchant')) {
+    return 'm';
+  } else if (cell.hasClass('cell-ground')) {
+    return 'G';
+  } else if (cell.hasClass('cell-river')) {
+    return 'R';
+  } else {
+    alert ("CRAP");
+  }
+}
+
+function add_civ_class(cell, piece) {
+  $.each(['settlement', 'farm', 'temple', 'merchant'], function(i, class) {
+      if (piece.hasClass(class)) {
+         cell.addClass(class);
+      }
+  });
+}
+
+function config_drop(item, class) {
+  $("#drop" + item).droppable({
+       accept: "." + class,
+       activeClass: 'droppable-active',
+       hoverClass: 'droppable-hover',
+       drop: function(ev, ui) {
+         add_civ_class($(this), $(ui.draggable));
+       }
+  });
+}
+
+  $(document).ready(function(){
+    $("#hand0").draggable({revert: true});
+    $("#hand1").draggable({revert: true});
+    $("#hand2").draggable({revert: true});
+    $("#hand3").draggable({revert: true});
+    $("#hand4").draggable({revert: true});
+    $("#hand5").draggable({revert: true});
+
+    {{ config_drop_str }}
+  });
+  
+</script>
+
+<style>
+{% for css in css_classes %}
+   {{ css }}
+{% endfor %}
+
+.cell-ground {
+   background-color: grey;
+}
+.cell-river {
+   background-color: #0000AA;
+}
+
+.droppable-active {
+}
+.droppable-hover {
+   background-color: yellow;
+}
+
+.civ {
+  width: 50px;
+  height: 50px;
+  background-color: grey;
+}
+
+.settlement {
+  background-color: black;
+}
+
+.temple {
+  background-color: red;
+}
+
+.merchant {
+  background-color: green;
+}
+
+.farm {
+  background-color: blue;
+}
+
+#hand0 {
+  position: absolute;
+  top: 600px;
+  left: 200px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand1 {
+  position: absolute;
+  top: 600px;
+  left: 250px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand2 {
+  position: absolute;
+  top: 600px;
+  left: 300px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand3 {
+  position: absolute;
+  top: 600px;
+  left: 350px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand4 {
+  position: absolute;
+  top: 600px;
+  left: 400px;
+  height: 50px;
+  width: 50px;
+}
+
+#hand5 {
+  position: absolute;
+  top: 600px;
+  left: 450px;
+  height: 50px;
+  width: 50px;
+}
+
+</style>
+
+<body>
+{% for div in div_decls %}
+   {{ div }}
+{% endfor %}
+
+<div id="hand0" class="civ settlement ground">A</div>
+<div id="hand1" class="civ temple ground">B</div>
+<div id="hand2" class="civ farm river">C</div>
+<div id="hand3" class="civ merchant ground">D</div>
+
+
+</body>
+</html>

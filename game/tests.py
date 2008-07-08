@@ -2,7 +2,7 @@ import unittest
 from game.models import Game, CivBag, Player
 from game.board import StandardBoard
 from game.board.cell import Ground, River
-from game.board import identify_groups, identify_kingdoms, get_legal_civ_moves
+from game.board import identify_regions, identify_kingdoms, get_legal_civ_moves, adjacent_kingdoms_by_cell_no, legal_ruler_cells, pieces_by_region
 
 class GameIntegrityTestCase(unittest.TestCase):
     def testGame(self):
@@ -11,7 +11,7 @@ class GameIntegrityTestCase(unittest.TestCase):
         p3 = Player.objects.create(user_name = 'P3')
         p4 = Player.objects.create(user_name = 'P4')
 
-        game = Game.objects.create(player_1=p1, player_2=p2, player_3=p3, player_4=p4, turn=0)
+        game = Game.objects.create(player_1=p1, player_2=p2, player_3=p3, player_4=p4, turn_no=0)
         board = StandardBoard(game)
         bag = CivBag(game)
         
@@ -102,8 +102,128 @@ class StandardBoardTestCase(unittest.TestCase):
         board.rows = 4
         board.columns = 5
         board._parse_state('G|R|s|r1t|R|t|G|G|G|t|R|R|R|R|R|t|t|G|t|G')
-        res = identify_groups(board)
+        res = identify_regions(board)
         self.assertEquals(res, [0, 0, 5, 5, 0, 4, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 2, 0, 1, 0])
 
         res = identify_kingdoms(res, board)
         self.assertEquals(res, [0, 0, 5, 5, 0, -4, -0, -0, -0, -3, -0, -0, -0, -0, -0, -2, -2, -0, -1, -0])
+
+#     def testLegalRulerMoves(self):
+#         board = StandardBoard(self.game)
+#         board.rows = 3
+#         board.columns = 2
+#         board._parse_state('t|G|r1t|G|t|G')
+
+#         get_legal_ruler_moves(board)
+
+    def test_adjacent_kingdoms_by_cell_no(self):
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('t|G|G|G|t|r1t|G|s|G|G|G|r1s|s|s|G|s')
+
+        res = identify_regions(board)
+        res = identify_kingdoms(res, board)
+        res = adjacent_kingdoms_by_cell_no(board, res)
+
+        self.assertEquals(res,  [[],  [3], [],     [1], 
+                                 [],  [],  [1, 3], [], 
+                                 [3], [3], [1],    [], 
+                                 [],  [],  [1],    []   ])
+
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('r1s|s|r1t|s|G|t|G|G|r1f|G|r1m|s|s|s|G|s')
+
+        res = identify_regions(board)
+        res = identify_kingdoms(res, board)
+        res = adjacent_kingdoms_by_cell_no(board, res)
+
+        self.assertEquals(res,  [[],     [],        [],     [], 
+                                 [2, 3], [],        [1, 3], [1, 3], 
+                                 [],     [1, 2, 3], [],     [], 
+                                 [],     [],        [1, 2], []      ])
+
+        board = StandardBoard(self.game)
+        board.rows = 5
+        board.columns = 5
+        board._parse_state('G|G|s|G|G|G|G|r1s|G|G|r2s|s|G|s|r3s|G|G|s|G|G|G|G|r4s|G|G')
+
+        res = identify_regions(board)
+        res = identify_kingdoms(res, board)
+        res = adjacent_kingdoms_by_cell_no(board, res)
+
+        self.assertEquals(res,  [[],  [4],    [],           [4],    [],
+                                 [3], [3,4],  [],           [2, 4], [2],
+                                 [],  [],     [1, 2, 3, 4], [],     [],
+                                 [3], [1, 3], [],           [1, 2], [2], 
+                                 [],  [1],    [],           [1],    []   ])
+
+    def test_legal_ruler_cells(self):
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('G|t|G|t|s|r1t|G|G|G|G|G|s|G|t|r2t|t')
+        
+        res = identify_regions(board)
+        res = identify_kingdoms(res, board)
+
+        res = legal_ruler_cells(board, res)
+
+        self.assertEquals(res, [ 0, 2, 7, 12 ])
+
+
+    def test_legal_ruler_cells__catastrophe_not_okay(self):
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('G|t|G!|t|s|r1t|G|G|G|G|G|s|G|G!|r2t|t')
+        
+        res = identify_regions(board)
+        res = identify_kingdoms(res, board)
+
+        res = legal_ruler_cells(board, res)
+
+        self.assertEquals(res, [ 0, 7 ])
+        
+    def test_legal_ruler_cells__river_not_okay(self):
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('s|G|G|t|t|r1t|G|R|G|G|s|s|s|t|r2t|t')
+        
+        res = identify_regions(board)
+        res = identify_kingdoms(res, board)
+
+        res = legal_ruler_cells(board, res)
+
+        self.assertEquals(res, [ 2 ])
+
+    def test_legal_ruler_cells__treasure_okay(self):
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('s|G|G|T|t|r1t|G|G|G|G|s|s|s|t|r2t|t')
+        
+        res = identify_regions(board)
+        res = identify_kingdoms(res, board)
+
+        res = legal_ruler_cells(board, res)
+
+        self.assertEquals(res, [ 2, 7 ])
+
+    def test_pieces_by_region(self):
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('s|G|G|t|t|r1t|G|G|G|G|m|r2f|s|t|r1s|t')
+        
+        res = identify_regions(board)
+        print res
+        res = pieces_by_region(board, res)
+
+        print res
+
+        assert(0)
+# [{'farm': [], 'rulers': [], 'settlement': [], 'temple': [], 'merchant': []}, {'farm': [], 'rulers': [('ruler-farm', '2', 11), ('ruler-settlement', '1', 14)], 'settlement': [12], 'temple': [13, 15], 'merchant': [10]}, {'farm': [], 'rulers': [('ruler-temple', '1', 5)], 'settlement': [0], 'temple': [4], 'merchant': []}, {'farm': [], 'rulers': [], 'settlement': [], 'temple': [3], 'merchant': []}]
