@@ -36,8 +36,8 @@ class Hand(models.Model):
         
 class Board(models.Model):
     game = models.ForeignKey(Game)
-    turn_no = models.IntegerField()
-    action_no = models.IntegerField()
+    turn_no = models.IntegerField(default=0)
+    action_no = models.IntegerField(default=0)
     rows = models.IntegerField()
     columns = models.IntegerField()
     board = models.TextField()

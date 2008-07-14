@@ -4,6 +4,7 @@ from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, Set
 from game.board.special import Unification, Catastrophe
 
 class StandardBoard:
+    data = []
     rows = 11
     columns = 16
     cells = []
@@ -87,6 +88,7 @@ class StandardBoard:
                 pass
 
         self.cells = [ convert(x) for x in board_str.split('|')]
+        self.data = [ {} for _ in self.cells ]
 
     def get_cell_no_for_civ(self, color):
         cell_nos = []
@@ -113,6 +115,23 @@ class StandardBoard:
 
     def add_civ(self, cell_no, civ):
         self.cells[cell_no].piece = civ
+
+def build_board_data(board):
+    regions = identify_regions(board)
+    kingdoms = identify_kingdoms(regions, board)
+
+    for cell_no, kingdom in enumerate(kingdoms):
+        board.data[cell_no]['kingdom'] = kingdom
+
+    adjacent_kingdoms_list = adjacent_kingdoms_by_cell_no(board, kingdoms)
+    for cell_no, adjacent_kingdoms in enumerate(adjacent_kingdoms_list):
+        board.data[cell_no]['adjacent_kingdoms'] = adjacent_kingdoms
+
+    adjacent_temples_list = adjacent_temples_by_cell_no(board)
+    for cell_no, adjacent_temples in enumerate(adjacent_temples_list):
+        board.data[cell_no]['adjacent_temples'] = adjacent_temples
+
+    board.pieces_by_region = pieces_by_region(board, regions)
 
 def identify_regions(board):
     """Give a board
@@ -152,41 +171,6 @@ def identify_kingdoms(region_list, board):
             regions.add(region_no)
 
     return [ x in regions and x or -x for x in region_list ]
-
-
-def get_legal_moves(board):
-    return get_legal_civ_moves(board)
-
-# def get_legal_ruler_moves(board):
-#     legal_spots = { 'temple':[], 'settlement':[], 'farm':[], 'merchant':[] }
-#     kingdoms = identify_kingdoms(identify_regions(board), board)
-#     assert(len(kingdoms) == len(board))
-    
-#     legal_spots = legal_ruler_cells(board, kingdoms, 1)
-
-#     placed_rulers_by_kingdom_id = {}
-#     for kingdom_no in range(1, max(kingdoms) + 1):
-#         for cell_no, kingdom_id in enumerate(kingdoms):
-#             if kingdom_id == kingdom_no:
-#                 if board[cell_no].piece and board[cell_no].piece.is_ruler:
-#                     if kingdom_id in placed_rulers_by_kingdom_id:
-#                         placed_rulers_by_kingdom_id[kingdom_id].append(board[cell_no].db_form()[-1])
-#                     else:
-#                         placed_rulers_by_kingdom_id[kingdom_id] = [ board[cell_no].db_form()[-1] ]
-
-    
-#     print 'legal spots:', legal_spots
-#     print 'kingdoms:', kingdoms
-#     print 'placed rulers:', placed_rulers_by_kingdom_id
-#     return legal_spots
-
-def get_legal_civ_moves(board):
-    kingdoms = identify_kingdoms(identify_regions(board), board)
-    print kingdoms
-    assert(len(kingdoms) == len(board))
-    
-    legal_spots = legal_ruler_cells(board, kingdoms, 1)
-    return legal_spots
 
 def do_on_adjacent_cells(cell_no, board, pred, func):
     cur_row = cell_no / board.columns
@@ -235,32 +219,15 @@ list[region_no] = { 'rulers': [ ruler objects ],
 
     return pieces_by_region
 
-def legal_ruler_cells(board, kingdoms):
-    """Takes a board, and a list where list[cell_no] = kingdom_no.
-Return a list of all legal moves for a ruler.
-NOTE: Moves could still cause internal conflict
-"""
-    legal_spots = []
+def adjacent_temples_by_cell_no(board):
+    adjacent_temples_list = [ [] for x in board ]
 
-    adjacent_kingdoms_board = adjacent_kingdoms_by_cell_no(board, kingdoms)
-    for cell_no, adjacent_kingdoms in enumerate(adjacent_kingdoms_board):
-        if board[cell_no].has_piece() or board[cell_no].has_special() or not board[cell_no].is_ground:
-            continue
+    for cell_no, cell in enumerate(board):
+        pred = lambda index: board[index].piece and (board[index].piece.name() == 'civ-temple')
+        add_adjacent_temple = lambda index: adjacent_temples_list[cell_no].append(index)
+        do_on_adjacent_cells(cell_no, board, pred=pred, func=add_adjacent_temple)
 
-        # use a list for ... mutability?
-        # true/false doesn't work
-        is_touching_temple = [] 
-
-        pred = lambda index: board[index].has_piece() and board[index].db_form().lower() == 't'
-        def set_touching_temple(index):
-            is_touching_temple.append(1)
-            
-        do_on_adjacent_cells(cell_no, board, pred=pred, func=set_touching_temple)
-
-        if len(adjacent_kingdoms) <= 1 and is_touching_temple:
-            legal_spots.append(cell_no)
-
-    return legal_spots
+    return adjacent_temples_list
 
 def adjacent_kingdoms_by_cell_no(board, kingdoms):
     """Take a board and a list where list[cell_no] = kingdom_no.
@@ -293,3 +260,40 @@ def split_legal_moves_by_type(board):
 
     return { 'ground': legal_ground,
              'river': legal_river }
+
+
+################################
+
+def ruler_intersect(board, kingdoms_list):
+    assert len(kingdoms_list) == 2
+    kingdoms1 = [ ruler_name for (ruler_name, _, _) in board.pieces_by_region[kingdoms_list[0]]['rulers'] ]
+    kingdoms2 = [ ruler_name for (ruler_name, _, _) in board.pieces_by_region[kingdoms_list[1]]['rulers'] ]
+
+    for item in kingdoms1:
+        if item in kingdoms2:
+            return True
+
+    return False
+                                        
+def safe_tile(board, cell_no, is_ground=True):
+    return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground == is_ground and (len(board.data[cell_no]['adjacent_kingdoms']) <= 1 or
+                                                                                      (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and 
+                                                                                       not ruler_intersect(board, board.data[cell_no]['adjacent_kingdoms'])))
+def external_war_tile(board, cell_no, is_ground=True):
+    return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground == is_ground and (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and 
+                                                                                      ruler_intersect(board, board.data[cell_no]['adjacent_kingdoms']))
+
+def safe_ruler(board, cell_no, ruler_type):
+    rulers_in_kingdom = []
+    if len(board.data[cell_no]['adjacent_kingdoms']) is 1:
+        rulers_in_kingdom = [ ruler for ruler, _, _ in board.pieces_by_region[board.data[cell_no]['adjacent_kingdoms'][0]]['rulers'] ]
+
+    return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground and len(board.data[cell_no]['adjacent_kingdoms']) <= 1 and (ruler_type not in rulers_in_kingdom) and len(board.data[cell_no]['adjacent_temples']) > 0
+
+
+def internal_war_ruler(board, cell_no, ruler_type):
+    rulers_in_kingdom = []
+    if len(board.data[cell_no]['adjacent_kingdoms']) is 1:
+        rulers_in_kingdom = [ ruler for ruler, _, _ in board.pieces_by_region[board.data[cell_no]['adjacent_kingdoms'][0]]['rulers'] ]
+
+    return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground and len(board.data[cell_no]['adjacent_kingdoms']) is 1 and (ruler_type in rulers_in_kingdom) and len(board.data[cell_no]['adjacent_temples']) > 0

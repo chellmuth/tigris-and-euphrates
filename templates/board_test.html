@@ -7,49 +7,43 @@
 <script type="text/javascript" src="http://localhost/media/js/ui.droppable.js"></script>
 
 <script>
-function json_callback(data) {
-  $.each(data[0]['legal_ground_moves'], function(i, item) { config_drop(item, 'ground'); });
-  $.each(data[1]['legal_river_moves'], function(i, item) { config_drop(item, 'river'); });
-  $.each(data[2]['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
-  $.each(data[3]['temple_civ'], function(i, cell_no) { place_civ_on_board('temple', cell_no); });
-  $.each(data[4]['settlement_civ'], function(i, cell_no) { place_civ_on_board('settlement', cell_no); });
-  $.each(data[5]['farm_civ'], function(i, cell_no) { place_civ_on_board('farm', cell_no); });
-  $.each(data[6]['merchant_civ'], function(i, cell_no) { place_civ_on_board('merchant', cell_no); });
+var state;
 
+function json_callback(data) {
+  $.each(data['legal_ground_moves'], function(i, item) { config_accept(item, 'ground'); });
+  $.each(data['legal_river_moves'], function(i, item) { config_accept(item, 'river'); });
+  $.each(data['legal_ruler_moves']['settlement'], function(i, item) { $("#drop" + item).addClass('civ-settlement'); });
+  $.each(data['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
+  $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
+  $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });
+  $.each(data['farm_civ'], function(i, cell_no) { place_civ_on_board('civ-farm', cell_no); });
+  $.each(data['merchant_civ'], function(i, cell_no) { place_civ_on_board('civ-merchant', cell_no); });
+
+  state = data;
 }
 
 function place_civ_on_board(civ_type, cell_no) {
-  $("#drop" + cell_no).removeClass('temple').removeClass('settlement').removeClass('farm').removeClass('merchant').addClass(civ_type);
+  $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
 }
 
 function set_civilization_tiles(index, civ_type) {
   color = 'error';
   type = 'ground';
   if (civ_type[0] == 'f') {
-    color = 'farm';
+    color = 'civ-farm';
     type = 'river';
   } else if (civ_type[0] == 't') {
-    color = 'temple';
+    color = 'civ-temple';
   } else if (civ_type[0] == 'm') {
-    color = 'merchant';
+    color = 'civ-merchant';
   } else if (civ_type[0] == 's') {
-    color = 'settlement';
+    color = 'civ-settlement';
   }
 
-  $("#hand" + index).removeAttr('class').addClass('civ').addClass(color).addClass(type);
+  $("#hand" + index).removeAttr('class').addClass('civ').addClass(color).addClass(type).addClass('piece');
 }
 
-function config_drop(item, class) {
-  $("#drop" + item).droppable({
-       accept: "." + class,
-       activeClass: 'droppable-active',
-       hoverClass: 'droppable-hover',
-       drop: function(ev, ui) {
-          piece = $(ui.draggable).get()[0].id;
-          cell = $(this).get()[0].id;
-          $.getJSON("http://localhost:8000/drop_civ/" + piece + "/" + cell + "/", function (data) { json_callback(data); });
-       }
-  });
+function config_accept(item, class) {
 }
 
 function call_json() {
@@ -57,8 +51,7 @@ function call_json() {
 }
 
   $(document).ready(function(){
-    $(".ground").draggable({revert: true});
-    $(".river").draggable({revert: true});
+    call_json();
 
     $("#hand0").draggable({revert: true});
     $("#hand1").draggable({revert: true});
@@ -67,7 +60,41 @@ function call_json() {
     $("#hand4").draggable({revert: true});
     $("#hand5").draggable({revert: true});
 
-    call_json();
+    $("#ruler-settlement").draggable({revert: true});
+    $("#ruler-farm").draggable({revert: true});
+    $("#ruler-merchant").draggable({revert: true});
+    $("#ruler-temple").draggable({revert: true});
+
+    $("#board").droppable({
+      accept: ".piece",
+      drop: function(ev, ui) {
+          var row = ev.clientY / {{ size }} | 0;
+          var col = ev.clientX / {{ size }} | 0;
+          var cell_no = row * {{ cols }} + col;
+          
+          var piece = ui.draggable.get(0).id;
+          var index = "undefined";
+          if ((['hand0', 'hand1', 'hand2', 'hand3', 'hand4', 'hand5']).indexOf(piece) >= 0) {
+             if (ui.draggable.hasClass("ground")) {
+                index = state['legal_ground_moves'].indexOf(cell_no);
+             }
+             else {
+                index = state['legal_river_moves'].indexOf(cell_no);
+             }
+          }
+          else {
+             switch (piece) {
+               case "ruler-settlement":
+                 index = state['legal_ruler_moves']['settlement'].indexOf(cell_no);
+                 break;
+               default:
+                 index = "CRAP!";
+             }
+          }
+          alert(index);
+      }
+    });
+
   });
   
 {% for js in js_script %}
@@ -80,29 +107,7 @@ function call_json() {
    {{ css }}
 {% endfor %}
 
-.ground { 
-   position: absolute;
-   top: 5px;
-   left: 905px;
-   border: 2px solid #0090DF;
-   background-color: #68BFEF;
-   width: 50px; 
-   height: 50px;
-   margin: 10px;
-   z-index: 100;
-}
-
-.river { 
-   position: absolute;
-   top: 55px;
-   left: 905px;
-   border: 2px solid #0090DF;
-   background-color: #68BFEF;
-   width: 50px; 
-   height: 50px;
-   margin: 10px;
-   z-index: 100;
-}
+{{ board_css }}
 
 .cell-ground {
    background-color: grey;
@@ -113,6 +118,7 @@ function call_json() {
 
 .droppable-active {
 }
+
 .droppable-hover {
    background-color: yellow;
 }
@@ -165,45 +171,98 @@ function call_json() {
   width: 50px;
 }
 
-.civ {
+#ruler-settlement {
+  position: absolute;
+  top: 650px;
+  left: 250px;
+  height: 50px;
+  width: 50px;
+}
+
+#ruler-temple {
+  position: absolute;
+  top: 650px;
+  left: 300px;
+  height: 50px;
+  width: 50px;
+}
+
+#ruler-merchant {
+  position: absolute;
+  top: 650px;
+  left: 350px;
+  height: 50px;
+  width: 50px;
+}
+
+#ruler-farm {
+  position: absolute;
+  top: 650px;
+  left: 400px;
+  height: 50px;
+  width: 50px;
+}
+
+.piece {
   width: 50px;
   height: 50px;
   background-color: grey;
+  z-index:20;
 }
 
-.settlement {
+.civ-settlement {
   background-color: black;
 }
 
-.temple {
+.civ-temple {
   background-color: red;
 }
 
-.merchant {
+.civ-merchant {
   background-color: green;
 }
 
-.farm {
+.civ-farm {
   background-color: blue;
+}
+
+.ruler-settlement-1 {
+  background-image: url(http://localhost/media/pieces/rulers/A-Settlement.png);
+}
+
+.ruler-farm-1 {
+  background-image: url(http://localhost/media/pieces/rulers/A-Farm.png);
+}
+
+.ruler-merchant-1 {
+  background-image: url(http://localhost/media/pieces/rulers/A-Merchant.png);
+}
+
+.ruler-temple-1 {
+  background-image: url(http://localhost/media/pieces/rulers/A-Temple.png);
 }
 
 
 </style>
 
 <body>
-<div class="ground" id="civ1">ground!</div>
-<div class="river" id="civ2">river!</div>
 
-<div id="hand0" class="civ settlement">A</div>
-<div id="hand1" class="civ temple">B</div>
-<div id="hand2" class="civ farm">C</div>
-<div id="hand3" class="civ merchant">D</div>
-<div id="hand4" class="civ">E</div>
-<div id="hand5" class="civ">F</div>
+<div id="hand0" class="piece civ-settlement">A</div>
+<div id="hand1" class="piece civ-temple">B</div>
+<div id="hand2" class="piece civ-farm">C</div>
+<div id="hand3" class="piece civ-merchant">D</div>
+<div id="hand4" class="piece">E</div>
+<div id="hand5" class="piece">F</div>
+<div id="ruler-settlement" class="ruler-settlement-1 piece"></div>
+<div id="ruler-farm" class="ruler-farm-1 piece"></div>
+<div id="ruler-merchant" class="ruler-merchant-1 piece"></div>
+<div id="ruler-temple" class="ruler-temple-1 piece"></div>
 
+<div id="board">
 {% for div in div_decls %}
    {{ div }}
 {% endfor %}
+</div>
 
 </body>
 </html>

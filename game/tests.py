@@ -2,7 +2,7 @@ import unittest
 from game.models import Game, CivBag, Player
 from game.board import StandardBoard
 from game.board.cell import Ground, River
-from game.board import identify_regions, identify_kingdoms, get_legal_civ_moves, adjacent_kingdoms_by_cell_no, legal_ruler_cells, pieces_by_region
+from game.board import identify_regions, identify_kingdoms, adjacent_kingdoms_by_cell_no, legal_ruler_cells, pieces_by_region, adjacent_temples_by_cell_no, build_board_data, safe_tile, external_war_tile, safe_ruler, internal_war_ruler
 
 class GameIntegrityTestCase(unittest.TestCase):
     def testGame(self):
@@ -213,17 +213,52 @@ class StandardBoardTestCase(unittest.TestCase):
 
         self.assertEquals(res, [ 2, 7 ])
 
-    def test_pieces_by_region(self):
+    def test_adjacent_temples_by_cell_no(self):
         board = StandardBoard(self.game)
         board.rows = 4
         board.columns = 4
-        board._parse_state('s|G|G|t|t|r1t|G|G|G|G|m|r2f|s|t|r1s|t')
+        board._parse_state('s|G|G|T|t|r1t|G|G|G|G|s|s|s|t|r2t|t')
+
+        res = adjacent_temples_by_cell_no(board)
+        self.assertEquals(res, [[4], [], [3], [], [], [4], [], [3], [4], [13], [], [15], [13], [], [13, 15], []])
+
+    def test_adjacent_temples_by_cell_no(self):
+        board = StandardBoard(self.game)
+        board.rows = 4
+        board.columns = 4
+        board._parse_state('s|G|G|T|t|r1t|G|G|G|G|s|s|s|t|r2t|t')
+
+        build_board_data(board)
+
+        safe = [ cell_no for cell_no, cell in enumerate(board) if safe_tile(board, cell_no, cell.is_ground) ]
+        external_war = [ cell_no for cell_no, cell in enumerate(board) if external_war_tile(board, cell_no, cell.is_ground) ]
+
+        safe_temples = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-temple') ]
+        safe_settlements = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-settlement') ]
+        safe_farms = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-farm') ]
+        safe_merchants = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-merchant') ]
         
-        res = identify_regions(board)
-        print res
-        res = pieces_by_region(board, res)
+        war_temples = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-temple') ]
+        war_settlements = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-settlement') ]
+        war_farms = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-farm') ]
+        war_merchants = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-merchant') ]
 
-        print res
 
-        assert(0)
+        self.assertEquals(safe, [1, 2, 7])
+        self.assertEquals(external_war, [6, 8, 9])
+        self.assertEquals(safe_temples, [2])
+        self.assertEquals(safe_settlements, [1, 2, 7])
+        self.assertEquals(safe_farms, [1, 2, 7])
+        self.assertEquals(safe_merchants, [1, 2, 7])
+        self.assertEquals(war_temples, [1, 7])
+        self.assertEquals(war_settlements, [])
+
+#     def test_build_board_data(self):
+#         board = StandardBoard(self.game)
+#         board.rows = 4
+#         board.columns = 4
+#         board._parse_state('s|G|G|t|t|r1t|G|G|G|G|m|r2f|s|t|r1s|t')
+        
+#         build_board_data(board)
+#         assert(0)
 # [{'farm': [], 'rulers': [], 'settlement': [], 'temple': [], 'merchant': []}, {'farm': [], 'rulers': [('ruler-farm', '2', 11), ('ruler-settlement', '1', 14)], 'settlement': [12], 'temple': [13, 15], 'merchant': [10]}, {'farm': [], 'rulers': [('ruler-temple', '1', 5)], 'settlement': [0], 'temple': [4], 'merchant': []}, {'farm': [], 'rulers': [], 'settlement': [], 'temple': [3], 'merchant': []}]
