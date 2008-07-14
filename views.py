@@ -43,17 +43,43 @@ def create_game(request):
     p2_hand.save()
     board.save()
 
+def drop_ruler(request, ruler, cell):
+    cell = int(cell)
+
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = Player.objects.filter(user_name='cjh').get()
+
+    moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_ruler(board, cell_no, ruler) ]
+
+    if cell in moves:
+        board.add_ruler(cell, ruler, p)
+        
+    board.save()
+
+    return game_state_json(request)
+
 def drop_civ(request, civ, cell):
     civ = int(civ)
     cell = int(cell)
 
     g = Game.objects.get(id=1)
     board = StandardBoard(g,1)
+    build_board_data(board)
     p = Player.objects.filter(user_name='cjh').get()
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
     
-    legal_moves = split_legal_moves_by_type(board)
-    if cell in legal_moves['ground']:
+    moves = []
+    civ_obj = _convert(hand.__getattribute__('piece' + str(civ)))
+
+    if civ_obj.name() == 'civ-farm':
+        moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_tile(board, cell_no, is_ground=False) ]
+    else:
+        moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_tile(board, cell_no, is_ground=True) ]
+
+    if cell in moves:
+        print "HERE?"
         board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         hand.swap(civ)
         
@@ -130,11 +156,15 @@ def game_state_json(request):
    "temple_civ": %s,
    "settlement_civ": %s,
    "farm_civ": %s, 
-   "merchant_civ": %s 
+   "merchant_civ": %s,
+   "temple_ruler": %s,
+   "settlement_ruler": %s,
+   "farm_ruler": %s, 
+   "merchant_ruler": %s
 }
-""" % (ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, tiles, board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'))
+""" % (ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, tiles, board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_nos_for_ruler('t'), board.get_cell_nos_for_ruler('s'), board.get_cell_nos_for_ruler('f'), board.get_cell_nos_for_ruler('m'))
     
-    print str
+#    print str
 
     resp = HttpResponse(str)
     resp.headers['Content-Type'] = 'text/javascript'

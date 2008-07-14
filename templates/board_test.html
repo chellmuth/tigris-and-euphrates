@@ -10,20 +10,25 @@
 var state;
 
 function json_callback(data) {
-  $.each(data['legal_ground_moves'], function(i, item) { config_accept(item, 'ground'); });
-  $.each(data['legal_river_moves'], function(i, item) { config_accept(item, 'river'); });
-  $.each(data['legal_ruler_moves']['settlement'], function(i, item) { $("#drop" + item).addClass('civ-settlement'); });
   $.each(data['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
   $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
   $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });
   $.each(data['farm_civ'], function(i, cell_no) { place_civ_on_board('civ-farm', cell_no); });
   $.each(data['merchant_civ'], function(i, cell_no) { place_civ_on_board('civ-merchant', cell_no); });
+  $.each(data['temple_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-temple', cell_no); });
+  $.each(data['settlement_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-settlement', cell_no); });
+  $.each(data['farm_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-farm', cell_no); });
+  $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
 
   state = data;
 }
 
 function place_civ_on_board(civ_type, cell_no) {
   $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
+}
+
+function place_ruler_on_board(ruler_type, cell_no) {
+  $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(ruler_type + "-1");
 }
 
 function set_civilization_tiles(index, civ_type) {
@@ -73,7 +78,7 @@ function call_json() {
           var cell_no = row * {{ cols }} + col;
           
           var piece = ui.draggable.get(0).id;
-          var index = "undefined";
+          var index = -1;
           if ((['hand0', 'hand1', 'hand2', 'hand3', 'hand4', 'hand5']).indexOf(piece) >= 0) {
              if (ui.draggable.hasClass("ground")) {
                 index = state['legal_ground_moves'].indexOf(cell_no);
@@ -81,17 +86,34 @@ function call_json() {
              else {
                 index = state['legal_river_moves'].indexOf(cell_no);
              }
+
+             if (index >= 0) {
+                $.getJSON("http://localhost:8000/drop_civ/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+             }
           }
           else {
              switch (piece) {
                case "ruler-settlement":
                  index = state['legal_ruler_moves']['settlement'].indexOf(cell_no);
                  break;
+               case "ruler-merchant":
+                 index = state['legal_ruler_moves']['merchant'].indexOf(cell_no);
+                 break;
+               case "ruler-farm":
+                 index = state['legal_ruler_moves']['farm'].indexOf(cell_no);
+                 break;
+               case "ruler-temple":
+                 index = state['legal_ruler_moves']['temple'].indexOf(cell_no);
+                 break;
+
                default:
-                 index = "CRAP!";
+                 index = -1;
+             }
+
+             if (index >= 0) {
+                $.getJSON("http://localhost:8000/drop_ruler/" + piece.substring(6) + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
           }
-          alert(index);
       }
     });
 

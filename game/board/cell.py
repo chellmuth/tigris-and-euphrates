@@ -14,7 +14,7 @@ class Cell:
         if special and '!' in special:
             return special
 
-        special + piece
+        return special + piece
 
     def has_piece(self):
         return self.piece is not None

@@ -3,6 +3,17 @@ from game.board.cell import Ground, River
 from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, SettlementRuler, FarmRuler, TempleRuler, MerchantRuler, GroundMonument, RiverMonument
 from game.board.special import Unification, Catastrophe
 
+def _convert_ruler(str):
+    if str == 'settlement':
+        return SettlementRuler(1)
+    if str == 'merchant':
+        return MerchantRuler(1)
+    if str == 'farm':
+        return FarmRuler(1)
+    if str == 'temple':
+        return TempleRuler(1)
+
+
 class StandardBoard:
     data = []
     rows = 11
@@ -97,6 +108,13 @@ class StandardBoard:
                 cell_nos.append(cell_no)
         return cell_nos
 
+    def get_cell_nos_for_ruler(self, color):
+        cell_nos = []
+        for cell_no, cell in enumerate(self.cells):
+            if cell.piece and (cell.piece.db_form()[-1] == color) and (cell.piece.db_form()[0] == 'r'):
+                cell_nos.append(cell_no)
+        return cell_nos
+
     def save(self):
         self.board.board = self._db_form()
         self.board.save()
@@ -112,6 +130,10 @@ class StandardBoard:
 
     def __setitem__(self, x, y):
         return self.cells.__setitem__(x, y)
+
+    def add_ruler(self, cell_no, ruler, player):
+        piece = _convert_ruler(ruler)
+        self.cells[cell_no].piece = piece
 
     def add_civ(self, cell_no, civ):
         self.cells[cell_no].piece = civ

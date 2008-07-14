@@ -72,28 +72,28 @@ class Ruler(Piece):
 
 class SettlementRuler(Ruler):
     def db_form(self):
-        return 'r' + self.player_no + 's'
+        return 'r' + str(self.player_no) + 's'
 
     def name(self):
         return 'ruler-settlement'
 
 class FarmRuler(Ruler):
     def db_form(self):
-        return 'r' + self.player_no + 'f'
+        return 'r' + str(self.player_no) + 'f'
 
     def name(self):
         return 'ruler-farm'
 
 class TempleRuler(Ruler):
     def db_form(self):
-        return 'r' + self.player_no + 't'
+        return 'r' + str(self.player_no) + 't'
 
     def name(self):
         return 'ruler-temple'
 
 class MerchantRuler(Ruler):
     def db_form(self):
-        return 'r' + self.player_no + 'm'
+        return 'r' + str(self.player_no) + 'm'
 
     def name(self):
         return 'ruler-merchant'
