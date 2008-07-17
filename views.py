@@ -53,7 +53,7 @@ def drop_ruler(request, player_no, ruler, cell):
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
 
-    moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_ruler(board, cell_no, ruler) ]
+    moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_ruler(board, cell_no, ruler, player_no) ]
 
     if cell in moves:
         board.add_ruler(cell, ruler, player_no)
