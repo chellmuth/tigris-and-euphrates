@@ -101,6 +101,13 @@ class StandardBoard:
         self.cells = [ convert(x) for x in board_str.split('|')]
         self.data = [ {} for _ in self.cells ]
 
+    def is_ruler_placed(self, ruler_type, player_no):
+        for cell_no, cell in enumerate(self.cells):
+            if cell.piece and (cell.piece.db_form() == 'r' + player_no + ruler_type[6]):
+                return True
+
+        return None
+
     def get_cell_no_for_civ(self, color):
         cell_nos = []
         for cell_no, cell in enumerate(self.cells):
@@ -305,7 +312,9 @@ def external_war_tile(board, cell_no, is_ground=True):
     return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground == is_ground and (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and 
                                                                                       ruler_intersect(board, board.data[cell_no]['adjacent_kingdoms']))
 
-def safe_ruler(board, cell_no, ruler_type):
+def safe_ruler(board, cell_no, ruler_type, player_no):
+    if board.is_ruler_placed(ruler_type, player_no): return []
+
     rulers_in_kingdom = []
     if len(board.data[cell_no]['adjacent_kingdoms']) is 1:
         rulers_in_kingdom = [ ruler for ruler, _, _ in board.pieces_by_region[board.data[cell_no]['adjacent_kingdoms'][0]]['rulers'] ]
