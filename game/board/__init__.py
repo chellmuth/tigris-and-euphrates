@@ -3,15 +3,15 @@ from game.board.cell import Ground, River
 from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, SettlementRuler, FarmRuler, TempleRuler, MerchantRuler, GroundMonument, RiverMonument
 from game.board.special import Unification, Catastrophe
 
-def _convert_ruler(str):
+def _convert_ruler(str, player_no):
     if str == 'settlement':
-        return SettlementRuler(1)
+        return SettlementRuler(player_no)
     if str == 'merchant':
-        return MerchantRuler(1)
+        return MerchantRuler(player_no)
     if str == 'farm':
-        return FarmRuler(1)
+        return FarmRuler(player_no)
     if str == 'temple':
-        return TempleRuler(1)
+        return TempleRuler(player_no)
 
 
 class StandardBoard:
@@ -108,11 +108,11 @@ class StandardBoard:
                 cell_nos.append(cell_no)
         return cell_nos
 
-    def get_cell_nos_for_ruler(self, color):
+    def get_cell_and_player_nos_for_ruler(self, color):
         cell_nos = []
         for cell_no, cell in enumerate(self.cells):
             if cell.piece and (cell.piece.db_form()[-1] == color) and (cell.piece.db_form()[0] == 'r'):
-                cell_nos.append(cell_no)
+                cell_nos.append([cell_no, int(cell.piece.player_no)])
         return cell_nos
 
     def save(self):
@@ -131,8 +131,8 @@ class StandardBoard:
     def __setitem__(self, x, y):
         return self.cells.__setitem__(x, y)
 
-    def add_ruler(self, cell_no, ruler, player):
-        piece = _convert_ruler(ruler)
+    def add_ruler(self, cell_no, ruler, player_no):
+        piece = _convert_ruler(ruler, player_no)
         self.cells[cell_no].piece = piece
 
     def add_civ(self, cell_no, civ):

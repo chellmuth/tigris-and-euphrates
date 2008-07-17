@@ -14,10 +14,10 @@ function json_callback(data) {
   $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
   $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });
   $.each(data['farm_civ'], function(i, cell_no) { place_civ_on_board('civ-farm', cell_no); });
-  $.each(data['merchant_civ'], function(i, cell_no) { place_civ_on_board('civ-merchant', cell_no); });
-  $.each(data['temple_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-temple', cell_no); });
-  $.each(data['settlement_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-settlement', cell_no); });
-  $.each(data['farm_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-farm', cell_no); });
+  $.each(data['merchant_civ'], function(i, cell_and_player_no) { place_civ_on_board('civ-merchant', cell_and_player_no); });
+  $.each(data['temple_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-temple', cell_and_player_no); });
+  $.each(data['settlement_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-settlement', cell_and_player_no); });
+  $.each(data['farm_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-farm', cell_and_player_no); });
   $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
 
   state = data;
@@ -27,8 +27,8 @@ function place_civ_on_board(civ_type, cell_no) {
   $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
 }
 
-function place_ruler_on_board(ruler_type, cell_no) {
-  $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(ruler_type + "-1");
+function place_ruler_on_board(ruler_type, cell_info) {
+  $("#drop" + cell_info[0]).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(ruler_type + "-" + cell_info[1]);
 }
 
 function set_civilization_tiles(index, civ_type) {
@@ -52,7 +52,7 @@ function config_accept(item, class) {
 }
 
 function call_json() {
-  $.getJSON("http://localhost:8000/game_state_json/", function (data) { json_callback(data); });
+  $.getJSON("http://localhost:8000/game_state_json/{{ player_no }}/", function (data) { json_callback(data); });
 }
 
   $(document).ready(function(){
@@ -88,7 +88,7 @@ function call_json() {
              }
 
              if (index >= 0) {
-                $.getJSON("http://localhost:8000/drop_civ/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+                $.getJSON("http://localhost:8000/drop_civ/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
           }
           else {
@@ -111,7 +111,7 @@ function call_json() {
              }
 
              if (index >= 0) {
-                $.getJSON("http://localhost:8000/drop_ruler/" + piece.substring(6) + "/" + cell_no + "/", function (data) { json_callback(data); });
+                $.getJSON("http://localhost:8000/drop_ruler/{{ player_no }}/" + piece.substring(6) + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
           }
       }
@@ -132,10 +132,12 @@ function call_json() {
 {{ board_css }}
 
 .cell-ground {
-   background-color: grey;
+  border: 1px solid white;
+  background-color: #887733;
 }
 .cell-river {
-   background-color: blue;
+  border: 1px solid white;
+  background-color: #7777FF;
 }
 
 .droppable-active {
@@ -199,6 +201,7 @@ function call_json() {
   left: 250px;
   height: 50px;
   width: 50px;
+  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Settlement.png);
 }
 
 #ruler-temple {
@@ -207,6 +210,7 @@ function call_json() {
   left: 300px;
   height: 50px;
   width: 50px;
+  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Temple.png);
 }
 
 #ruler-merchant {
@@ -215,6 +219,7 @@ function call_json() {
   left: 350px;
   height: 50px;
   width: 50px;
+  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Merchant.png);
 }
 
 #ruler-farm {
@@ -223,12 +228,12 @@ function call_json() {
   left: 400px;
   height: 50px;
   width: 50px;
+  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Farm.png);
 }
 
 .piece {
   width: 50px;
   height: 50px;
-  background-color: grey;
   z-index:20;
 }
 
@@ -264,6 +269,22 @@ function call_json() {
   background-image: url(http://localhost/media/pieces/rulers/A-Temple.png);
 }
 
+.ruler-settlement-2 {
+  background-image: url(http://localhost/media/pieces/rulers/B-Settlement.png);
+}
+
+.ruler-farm-2 {
+  background-image: url(http://localhost/media/pieces/rulers/B-Farm.png);
+}
+
+.ruler-merchant-2 {
+  background-image: url(http://localhost/media/pieces/rulers/B-Merchant.png);
+}
+
+.ruler-temple-2 {
+  background-image: url(http://localhost/media/pieces/rulers/B-Temple.png);
+}
+
 
 </style>
 
@@ -275,10 +296,10 @@ function call_json() {
 <div id="hand3" class="piece civ-merchant">D</div>
 <div id="hand4" class="piece">E</div>
 <div id="hand5" class="piece">F</div>
-<div id="ruler-settlement" class="ruler-settlement-1 piece"></div>
-<div id="ruler-farm" class="ruler-farm-1 piece"></div>
-<div id="ruler-merchant" class="ruler-merchant-1 piece"></div>
-<div id="ruler-temple" class="ruler-temple-1 piece"></div>
+<div id="ruler-settlement" class="ruler-settlement-{{ player_no }} piece"></div>
+<div id="ruler-farm" class="ruler-farm-{{ player_no }} piece"></div>
+<div id="ruler-merchant" class="ruler-merchant-{{ player_no }} piece"></div>
+<div id="ruler-temple" class="ruler-temple-{{ player_no }} piece"></div>
 
 <div id="board">
 {% for div in div_decls %}

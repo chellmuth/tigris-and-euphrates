@@ -43,31 +43,33 @@ def create_game(request):
     p2_hand.save()
     board.save()
 
-def drop_ruler(request, ruler, cell):
+    return HttpResponse()
+
+def drop_ruler(request, player_no, ruler, cell):
     cell = int(cell)
 
     g = Game.objects.get(id=1)
     board = StandardBoard(g,1)
     build_board_data(board)
-    p = Player.objects.filter(user_name='cjh').get()
+    p = g.__getattribute__('player_' + player_no)
 
     moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_ruler(board, cell_no, ruler) ]
 
     if cell in moves:
-        board.add_ruler(cell, ruler, p)
+        board.add_ruler(cell, ruler, player_no)
         
     board.save()
 
-    return game_state_json(request)
+    return game_state_json(request, player_no)
 
-def drop_civ(request, civ, cell):
+def drop_civ(request, player_no, civ, cell):
     civ = int(civ)
     cell = int(cell)
 
     g = Game.objects.get(id=1)
     board = StandardBoard(g,1)
     build_board_data(board)
-    p = Player.objects.filter(user_name='cjh').get()
+    p = g.__getattribute__('player_' + player_no)
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
     
     moves = []
@@ -79,19 +81,19 @@ def drop_civ(request, civ, cell):
         moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_tile(board, cell_no, is_ground=True) ]
 
     if cell in moves:
-        print "HERE?"
         board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         hand.swap(civ)
         
     board.save()
     hand.save()
 
-    return game_state_json(request)
+    return game_state_json(request, player_no)
 
-def print_custom_css_board(request, rows, cols, size):
+def print_custom_css_board(request, player_no, rows, cols, size):
     css_classes = []
     div_decls = []
     js_script = []
+    player_no = int(player_no)
 
     g = Game.objects.get(id=1)
     board = StandardBoard(g,1)
@@ -123,14 +125,16 @@ left: %spx;
 }
 """ % (cols*size, rows*size, 0, 0)
 
+    ruler_prefix = player_no == 1 and 'A' or 'B'
+
     return render_to_response('board_test.html', locals())
 
-def game_state_json(request):
+def game_state_json(request, player_no):
     g = Game.objects.get(id=1)
     board = StandardBoard(g,1)
     build_board_data(board)
 
-    p = Player.objects.filter(user_name='cjh').get()
+    p = g.__getattribute__('player_' + player_no)
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
     
     ground_moves = [ cell_no for cell_no, cell in enumerate(board) if safe_tile(board, cell_no, is_ground=True) ]
@@ -162,7 +166,7 @@ def game_state_json(request):
    "farm_ruler": %s, 
    "merchant_ruler": %s
 }
-""" % (ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, tiles, board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_nos_for_ruler('t'), board.get_cell_nos_for_ruler('s'), board.get_cell_nos_for_ruler('f'), board.get_cell_nos_for_ruler('m'))
+""" % (ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, tiles, board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'))
     
 #    print str
 
@@ -170,40 +174,3 @@ def game_state_json(request):
     resp.headers['Content-Type'] = 'text/javascript'
 
     return resp
-
-def create_board(request):
-    css_classes = []
-    div_decls = []
-
-    g = Game.objects.create()
-    board = StandardBoard(g)
-
-    rows = board.rows
-    cols = board.columns
-    size = 50
-
-    moves = split_legal_moves_by_type(board)
-    config_drop_str = """
-$.each(%s, function(i, item) { config_drop(item, 'ground'); });
-$.each(%s, function(i, item) { config_drop(item, 'river'); });
-""" % (moves['ground'], moves['river'])
-    
-    for cell_no in range(rows * cols):
-        row = cell_no / cols
-        col = cell_no % cols
-
-        css_string = """#drop%s {
-width: %spx;
-height: %spx;
-position: absolute;
-top: %spx;
-left: %spx;
-}
-""" % (cell_no, size, size, row * size, col * size)
-        css_classes.append(css_string)
-
-        cell_class = board[cell_no].is_ground and 'cell-ground' or 'cell-river'
-            
-        div_decls.append('<div id="drop%s" class="%s"></div>' % (cell_no, cell_class))
-
-    return render_to_response('create_situation.html', locals())
