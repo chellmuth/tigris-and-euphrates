@@ -139,6 +139,7 @@ class StandardBoard:
         return self.cells.__setitem__(x, y)
 
     def add_ruler(self, cell_no, ruler, player_no):
+        print "HELLO"
         piece = _convert_ruler(ruler, player_no)
         self.cells[cell_no].piece = piece
 
@@ -313,7 +314,7 @@ def external_war_tile(board, cell_no, is_ground=True):
                                                                                       ruler_intersect(board, board.data[cell_no]['adjacent_kingdoms']))
 
 def safe_ruler(board, cell_no, ruler_type, player_no):
-    if board.is_ruler_placed(ruler_type, player_no): return []
+    if board.is_ruler_placed(ruler_type, player_no): return False
 
     rulers_in_kingdom = []
     if len(board.data[cell_no]['adjacent_kingdoms']) is 1:
@@ -322,7 +323,9 @@ def safe_ruler(board, cell_no, ruler_type, player_no):
     return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground and len(board.data[cell_no]['adjacent_kingdoms']) <= 1 and (ruler_type not in rulers_in_kingdom) and len(board.data[cell_no]['adjacent_temples']) > 0
 
 
-def internal_war_ruler(board, cell_no, ruler_type):
+def internal_war_ruler(board, cell_no, ruler_type, player_no):
+    if board.is_ruler_placed(ruler_type, player_no): return False
+    
     rulers_in_kingdom = []
     if len(board.data[cell_no]['adjacent_kingdoms']) is 1:
         rulers_in_kingdom = [ ruler for ruler, _, _ in board.pieces_by_region[board.data[cell_no]['adjacent_kingdoms'][0]]['rulers'] ]

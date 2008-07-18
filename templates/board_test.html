@@ -79,9 +79,11 @@ function call_json() {
           
           var piece = ui.draggable.get(0).id;
           var index = -1;
+          var war_index = -1;
           if ((['hand0', 'hand1', 'hand2', 'hand3', 'hand4', 'hand5']).indexOf(piece) >= 0) {
              if (ui.draggable.hasClass("ground")) {
                 index = state['legal_ground_moves'].indexOf(cell_no);
+                war_index = state['war_ground_moves'].indexOf(cell_no);
              }
              else {
                 index = state['legal_river_moves'].indexOf(cell_no);
@@ -89,6 +91,9 @@ function call_json() {
 
              if (index >= 0) {
                 $.getJSON("http://localhost:8000/drop_civ/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+             }
+             else if (war_index >= 0) {
+                alert("WAR, WHAT IS IT GOOD FOR??");
              }
           }
           else {
