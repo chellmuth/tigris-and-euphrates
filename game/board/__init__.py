@@ -139,7 +139,6 @@ class StandardBoard:
         return self.cells.__setitem__(x, y)
 
     def add_ruler(self, cell_no, ruler, player_no):
-        print "HELLO"
         piece = _convert_ruler(ruler, player_no)
         self.cells[cell_no].piece = piece
 

@@ -109,6 +109,7 @@ function call_json() {
                  break;
                case "ruler-temple":
                  index = state['legal_ruler_moves']['temple'].indexOf(cell_no);
+                 war_index = state['war_ruler_moves']['temple'].indexOf(cell_no);
                  break;
 
                default:
@@ -117,6 +118,9 @@ function call_json() {
 
              if (index >= 0) {
                 $.getJSON("http://localhost:8000/drop_ruler/{{ player_no }}/" + piece.substring(6) + "/" + cell_no + "/", function (data) { json_callback(data); });
+             }
+             else if (war_index >= 0) {
+                alert("INTERNAL BATTLE!");
              }
           }
       }

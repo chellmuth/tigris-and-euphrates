@@ -3,7 +3,7 @@ from django.http import HttpResponse
 
 from game.models import Game, CivBag, Hand, Player
 from game.board import StandardBoard, build_board_data
-from game.board import split_legal_moves_by_type, safe_tile, safe_ruler, external_war_tile
+from game.board import split_legal_moves_by_type, safe_tile, safe_ruler, external_war_tile, internal_war_ruler
 from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv
 
 def _convert(str):
@@ -143,6 +143,7 @@ def game_state_json(request, player_no):
     river_moves = [ cell_no for cell_no, cell in enumerate(board) if safe_tile(board, cell_no, is_ground=False) ]
 
     safe_temples = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-temple', player_no) ]
+    war_temples = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-temple', player_no) ]
     safe_settlements = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-settlement', player_no) ]
     safe_farms = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-farm', player_no) ]
     safe_merchants = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-merchant', player_no) ]
@@ -159,6 +160,12 @@ def game_state_json(request, player_no):
          "farm": %s,
          "merchant": %s
        },
+   "war_ruler_moves": 
+       { "temple": %s,
+         "settlement": %s,
+         "farm": %s,
+         "merchant": %s
+       },
    "player_hand": %s,
    "temple_civ": %s,
    "settlement_civ": %s,
@@ -169,7 +176,7 @@ def game_state_json(request, player_no):
    "farm_ruler": %s, 
    "merchant_ruler": %s
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, tiles, board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'))
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'))
     
 #    print str
 
