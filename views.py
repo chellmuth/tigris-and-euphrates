@@ -17,6 +17,42 @@ def _convert(str):
         return TempleCiv()
     
 
+def external_war(request, player_no, civ, cell):
+    civ = int(civ)
+    cell = int(cell)
+
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+    
+    moves = []
+    civ_obj = _convert(hand.__getattribute__('piece' + str(civ)))
+
+    if civ_obj.name() == 'civ-farm':
+        moves = [ cell_no for cell_no, cell_obj in enumerate(board) if external_war_tile(board, cell_no, is_ground=False) ]
+    else:
+        moves = [ cell_no for cell_no, cell_obj in enumerate(board) if external_war_tile(board, cell_no, is_ground=True) ]
+
+    possible_battles = []
+
+    if cell in moves:
+        kingdom1, kingdom2 = board.data[cell]['adjacent_kingdoms']
+
+        kingdom_info1 = board.pieces_by_region[kingdom1]
+        kingdom_info2 = board.pieces_by_region[kingdom2]
+
+        for civ in [ 'farm', 'settlement', 'merchant', 'temple' ]:
+            if 'ruler-'+civ in [ ruler[0] for ruler in kingdom_info1['rulers'] ] and \
+               'ruler-'+civ in [ ruler[0] for ruler in kingdom_info2['rulers'] ]:
+                print "HERE"
+        
+    board.save()
+    hand.save()
+
+    return game_state_json(request, player_no)
+
 def create_game(request):
     p1 = Player.objects.create(user_name='cjh')
     p2 = Player.objects.create(user_name='test')

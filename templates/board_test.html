@@ -1,8 +1,10 @@
 <html>
 <head>
 </head>
+<link rel="stylesheet" type="text/css" href="http://localhost/media/css/flora.dialog.css" />
 <script type="text/javascript" src="http://localhost/media/js/jquery-1.2.6.js"></script>
 <script type="text/javascript" src="http://localhost/media/js/ui.core.js"></script>
+<script type="text/javascript" src="http://localhost/media/js/ui.dialog.js"></script>
 <script type="text/javascript" src="http://localhost/media/js/ui.draggable.js"></script>
 <script type="text/javascript" src="http://localhost/media/js/ui.droppable.js"></script>
 
@@ -51,6 +53,23 @@ function set_civilization_tiles(index, civ_type) {
 function config_accept(item, class) {
 }
 
+function set_draggables(enable)
+{
+  var str = enable ? "enable" : "disable";
+
+  $("#hand0").draggable(str);
+  $("#hand1").draggable(str);
+  $("#hand2").draggable(str);
+  $("#hand3").draggable(str);
+  $("#hand4").draggable(str);
+  $("#hand5").draggable(str);
+
+  $("#ruler-settlement").draggable(str);
+  $("#ruler-farm").draggable(str);
+  $("#ruler-merchant").draggable(str);
+  $("#ruler-temple").draggable(str);
+}
+
 function call_json() {
   $.getJSON("http://localhost:8000/game_state_json/{{ player_no }}/", function (data) { json_callback(data); });
 }
@@ -93,7 +112,22 @@ function call_json() {
                 $.getJSON("http://localhost:8000/drop_civ/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
              else if (war_index >= 0) {
-                alert("WAR, WHAT IS IT GOOD FOR??");
+                $("#external_confirm").dialog({
+                   dialogClass: "flora",
+                   buttons: {
+                     "LET'S DO THIS": function() {
+                        set_draggables(0);
+                        $.getJSON("http://localhost:8000/external_war/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+                        $(this).dialog("destroy");
+                     },
+                     "MAKE LOVE": function() {
+                        $(this).dialog("destroy");
+                     }
+                   },
+                   draggable: false,
+                   resizable: false,
+                   modal: true
+                });
              }
           }
           else {
@@ -315,6 +349,9 @@ function call_json() {
    {{ div }}
 {% endfor %}
 </div>
+
+<div id="external_confirm" title="External War?">Are you sure you want to start an external war?</div>
+<div id="choose_battle" title="Choose Color!">Choose the color for the next battle</div>
 
 </body>
 </html>
