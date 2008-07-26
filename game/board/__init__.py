@@ -148,6 +148,22 @@ class StandardBoard:
     def __setitem__(self, x, y):
         return self.cells.__setitem__(x, y)
 
+    def get_point(self, cell_no, civ):
+        try:
+            region = self.data[cell_no]['adjacent_kingdoms'][0]
+        except IndexError:
+            return None
+        
+        for name, player_no, _ in self.pieces_by_region[region]['rulers']:
+            if name == 'ruler-' + civ.css_class_name():
+                return player_no
+
+        for name, player_no, _ in self.pieces_by_region[region]['rulers']:
+            if name == 'ruler-settlement':
+                return player_no
+
+        return None
+
     def add_ruler(self, cell_no, ruler, player_no):
         piece = _convert_ruler(ruler, player_no)
         self.cells[cell_no].piece = piece

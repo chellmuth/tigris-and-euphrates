@@ -24,8 +24,12 @@ function json_callback(data) {
   $.each(data['farm_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-farm', cell_and_player_no); });
   $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
   $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
-
+  $.each(data['points'], function(i, type) { update_points(i, type); });
   state = data;
+}
+
+function update_points(type, amount) {
+  $("#points_" + type).text(amount);
 }
 
 function place_civ_on_board(civ_type, cell_no) {
@@ -347,6 +351,60 @@ function call_json() {
   background-image: url(http://localhost/media/pieces/rulers/B-Temple.png);
 }
 
+#points_temple {
+  border: 1px solid purple;
+  background-color: red;
+  height: 30px;
+  width: 30px;
+  top: 50px;
+  left: 850px;  
+  position: absolute;
+  color: white;
+}
+
+#points_settlement {
+  border: 1px solid purple;
+  background-color: black;
+  height: 30px;
+  width: 30px;
+  top: 80px;
+  left: 850px;  
+  position: absolute;
+  color: white;
+}
+
+#points_merchant {
+  border: 1px solid purple;
+  background-color: green;
+  height: 30px;
+  width: 30px;
+  top: 110px;
+  left: 850px;  
+  position: absolute;
+  color: white;
+}
+
+#points_farm {
+  border: 1px solid purple;
+  background-color: blue;
+  height: 30px;
+  width: 30px;
+  top: 140px;
+  left: 850px;  
+  position: absolute;
+  color: white;
+}
+
+#points_treasure {
+  border: 1px solid purple;
+  background-color: white;
+  height: 30px;
+  width: 30px;
+  top: 170px;
+  left: 850px;  
+  position: absolute;
+}
+
 
 </style>
 
@@ -371,6 +429,12 @@ function call_json() {
 
 <div id="external_confirm" title="External War?">Are you sure you want to start an external war?</div>
 <div id="choose_battle" title="Choose Color!">Choose the color for the next battle</div>
+
+<div id="points_temple"></div>
+<div id="points_settlement"></div>
+<div id="points_farm"></div>
+<div id="points_merchant"></div>
+<div id="points_treasure"></div>
 
 </body>
 </html>

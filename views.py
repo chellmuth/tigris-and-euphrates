@@ -121,9 +121,15 @@ def drop_civ(request, player_no, civ, cell):
         moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_tile(board, cell_no, is_ground=True) ]
 
     if cell in moves:
+        point_to = board.get_point(cell, _convert(hand.__getattribute__('piece' + str(civ))))
+        if point_to:
+            attr_name = 'player_' + point_to + '_points_' + civ_obj.css_class_name()
+            g.__setattr__(attr_name, g.__getattribute__(attr_name) + 1)
+            
         board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         hand.swap(civ)
         
+    g.save()
     board.save()
     hand.save()
 
@@ -189,6 +195,12 @@ def game_state_json(request, player_no):
     safe_merchants = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-merchant', player_no) ]
 
     tiles = [ hand.piece0, hand.piece1, hand.piece2, hand.piece3, hand.piece4, hand.piece5 ]
+
+    player_no_prefix = "player_" + player_no + "_points_" 
+    points = {}
+    for civ in [ 'temple', 'settlement', 'farm', 'merchant', 'treasure' ]:
+        points[civ] = g.__getattribute__(player_no_prefix + civ)
+    
     str = """
 {
    "legal_ground_moves": %s,
@@ -215,9 +227,16 @@ def game_state_json(request, player_no):
    "temple_ruler": %s,
    "settlement_ruler": %s,
    "farm_ruler": %s, 
-   "merchant_ruler": %s
+   "merchant_ruler": %s,
+   "points":
+       { "temple": %s,
+         "settlement": %s,
+         "farm": %s,
+         "merchant": %s,
+         "treasure": %s
+       }
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'))
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'])
     
 #    print str
 
