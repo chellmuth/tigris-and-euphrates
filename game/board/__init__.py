@@ -108,6 +108,12 @@ class StandardBoard:
 
         return None
 
+    def get_cell_no_for_unification(self):
+        for cell_no, cell in enumerate(self.cells):
+            if cell.special and ('?' in  cell.db_form()):
+                return [cell_no]
+        return []
+
     def get_cell_no_for_civ(self, color):
         cell_nos = []
         for cell_no, cell in enumerate(self.cells):
@@ -121,6 +127,10 @@ class StandardBoard:
             if cell.piece and (cell.piece.db_form()[-1] == color) and (cell.piece.db_form()[0] == 'r'):
                 cell_nos.append([cell_no, int(cell.piece.player_no)])
         return cell_nos
+
+    def place_unification(self, cell_no, civ):
+        self.cells[cell_no].piece = civ
+        self.cells[cell_no].special = Unification()
 
     def save(self):
         self.board.board = self._db_form()

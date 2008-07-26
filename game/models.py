@@ -33,6 +33,9 @@ class Hand(models.Model):
         new_piece = bag.get_piece()
         self.__setattr__('piece' + str(piece_no), new_piece.unique_id())
         bag.save()
+
+    def remove(self, piece_no):
+        self.__setattr__('piece' + str(piece_no), 'XXX')
         
 class Board(models.Model):
     game = models.ForeignKey(Game)

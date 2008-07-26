@@ -35,6 +35,10 @@ def external_war(request, player_no, civ, cell):
     else:
         moves = [ cell_no for cell_no, cell_obj in enumerate(board) if external_war_tile(board, cell_no, is_ground=True) ]
 
+    if cell in moves:
+        board.place_unification(cell, _convert(hand.__getattribute__('piece' + str(civ))))
+        hand.remove(civ)
+
     possible_battles = []
 
     if cell in moves:
@@ -46,7 +50,7 @@ def external_war(request, player_no, civ, cell):
         for civ in [ 'farm', 'settlement', 'merchant', 'temple' ]:
             if 'ruler-'+civ in [ ruler[0] for ruler in kingdom_info1['rulers'] ] and \
                'ruler-'+civ in [ ruler[0] for ruler in kingdom_info2['rulers'] ]:
-                print "HERE"
+                pass
         
     board.save()
     hand.save()
@@ -203,6 +207,7 @@ def game_state_json(request, player_no):
          "merchant": %s
        },
    "player_hand": %s,
+   "unification": %s,
    "temple_civ": %s,
    "settlement_civ": %s,
    "farm_civ": %s, 
@@ -212,7 +217,7 @@ def game_state_json(request, player_no):
    "farm_ruler": %s, 
    "merchant_ruler": %s
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'))
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'))
     
 #    print str
 

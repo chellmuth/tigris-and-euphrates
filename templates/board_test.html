@@ -12,6 +12,8 @@
 var state;
 
 function json_callback(data) {
+  $("#ruler-temple #ruler-settlement #ruler-merchant #ruler-farm").show();
+
   $.each(data['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
   $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
   $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });
@@ -21,19 +23,25 @@ function json_callback(data) {
   $.each(data['settlement_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-settlement', cell_and_player_no); });
   $.each(data['farm_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-farm', cell_and_player_no); });
   $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
+  $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
 
   state = data;
 }
 
 function place_civ_on_board(civ_type, cell_no) {
-  $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
+  $("#drop" + cell_no).removeClass('unification').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
 }
 
 function place_ruler_on_board(ruler_type, cell_info) {
   $("#drop" + cell_info[0]).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(ruler_type + "-" + cell_info[1]);
+  if (cell_info[1] == {{ player_no }}) {
+    $("#" + ruler_type).hide();
+  }
 }
 
 function set_civilization_tiles(index, civ_type) {
+  $("#hand" + index).show();
+
   color = 'error';
   type = 'ground';
   if (civ_type[0] == 'f') {
@@ -45,6 +53,9 @@ function set_civilization_tiles(index, civ_type) {
     color = 'civ-merchant';
   } else if (civ_type[0] == 's') {
     color = 'civ-settlement';
+  } else {
+    $("#hand" + index).hide();
+    color = 'civ-empty';
   }
 
   $("#hand" + index).removeAttr('class').addClass('civ').addClass(color).addClass(type).addClass('piece');
@@ -294,6 +305,14 @@ function call_json() {
 
 .civ-farm {
   background-color: blue;
+}
+
+.civ-empty {
+  background-color: yellow;
+}
+
+.unification {
+  background-image: url(http://localhost/media/pieces/special/unification.png);
 }
 
 .ruler-settlement-1 {
