@@ -19,12 +19,14 @@ class Game(models.Model):
     player_1_points_settlement = models.IntegerField(default=0)
     player_1_points_temple = models.IntegerField(default=0)    
     player_1_points_farm = models.IntegerField(default=0)
+    player_1_points_merchant = models.IntegerField(default=0)
     player_1_points_treasure = models.IntegerField(default=0)
 
     player_2_points_farm = models.IntegerField(default=0)
     player_2_points_settlement = models.IntegerField(default=0)
     player_2_points_temple = models.IntegerField(default=0)    
     player_2_points_farm = models.IntegerField(default=0)
+    player_2_points_merchant = models.IntegerField(default=0)
     player_2_points_treasure = models.IntegerField(default=0)
 
 class Hand(models.Model):
