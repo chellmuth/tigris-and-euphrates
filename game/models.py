@@ -15,6 +15,18 @@ class Game(models.Model):
     turn_no = models.IntegerField(default=0)
     action_no = models.IntegerField(default=0)
     
+    player_1_green = models.IntegerField(default=0)
+    player_1_black = models.IntegerField(default=0)
+    player_1_red = models.IntegerField(default=0)    
+    player_1_blue = models.IntegerField(default=0)
+    player_1_clear = models.IntegerField(default=0)
+
+    player_2_green = models.IntegerField(default=0)
+    player_2_black = models.IntegerField(default=0)
+    player_2_red = models.IntegerField(default=0)    
+    player_2_blue = models.IntegerField(default=0)
+    player_2_clear = models.IntegerField(default=0)
+
 class Hand(models.Model):
     player = models.ForeignKey(Player)
     turn_no = models.IntegerField()
