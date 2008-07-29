@@ -38,20 +38,9 @@ def external_war(request, player_no, civ, cell):
     if cell in moves:
         board.place_unification(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         hand.remove(civ)
+        g.state = 'CHOOSE_COLOR'
 
-    possible_battles = []
-
-    if cell in moves:
-        kingdom1, kingdom2 = board.data[cell]['adjacent_kingdoms']
-
-        kingdom_info1 = board.pieces_by_region[kingdom1]
-        kingdom_info2 = board.pieces_by_region[kingdom2]
-
-        for civ in [ 'farm', 'settlement', 'merchant', 'temple' ]:
-            if 'ruler-'+civ in [ ruler[0] for ruler in kingdom_info1['rulers'] ] and \
-               'ruler-'+civ in [ ruler[0] for ruler in kingdom_info2['rulers'] ]:
-                pass
-        
+    g.save()
     board.save()
     hand.save()
 
@@ -234,9 +223,11 @@ def game_state_json(request, player_no):
          "farm": %s,
          "merchant": %s,
          "treasure": %s
-       }
+       },
+    "war_choices": %s,
+    "state": "%s"
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'])
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], find_war_choices(board), g.state)
     
 #    print str
 
@@ -244,3 +235,21 @@ def game_state_json(request, player_no):
     resp.headers['Content-Type'] = 'text/javascript'
 
     return resp
+
+
+def find_war_choices(board):
+    unification_no = board.find_unification_tile()
+    if not unification_no: return []
+
+    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
+
+    kingdom_info1 = board.pieces_by_region[kingdom1]
+    kingdom_info2 = board.pieces_by_region[kingdom2]
+
+    civs = []
+    for civ in [ 'farm', 'settlement', 'merchant', 'temple' ]:
+        if 'ruler-'+civ in [ ruler[0] for ruler in kingdom_info1['rulers'] ] and \
+                'ruler-'+civ in [ ruler[0] for ruler in kingdom_info2['rulers'] ]:
+            civs.append(civ)
+
+    return civs

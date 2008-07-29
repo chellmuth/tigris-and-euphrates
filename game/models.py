@@ -29,6 +29,10 @@ class Game(models.Model):
     player_2_points_merchant = models.IntegerField(default=0)
     player_2_points_treasure = models.IntegerField(default=0)
 
+    waiting_for = models.ForeignKey(Player, related_name='waiting_for', blank=True, null=True)
+    current_turn = models.ForeignKey(Player, related_name='current_turn', blank=True, null=True)
+    state = models.TextField(default='NORMAL')
+
 class Hand(models.Model):
     player = models.ForeignKey(Player)
     turn_no = models.IntegerField()

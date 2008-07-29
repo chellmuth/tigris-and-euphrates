@@ -13,6 +13,7 @@ var state;
 
 function json_callback(data) {
   $("#ruler-temple #ruler-settlement #ruler-merchant #ruler-farm").show();
+  state = data;
 
   $.each(data['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
   $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
@@ -25,7 +26,27 @@ function json_callback(data) {
   $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
   $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
   $.each(data['points'], function(i, type) { update_points(i, type); });
-  state = data;
+
+  setmode(data['state']);
+}
+
+function setmode(type) {
+  if (type == 'CHOOSE_COLOR') {
+    button_colors = {}
+    $.each(state['war_choices'], function(i, civ) {
+      button_colors[civ] = function() {
+        $.getJSON("http://localhost:8000/choose_color/{{ player_no }}/" + civ + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }
+    });
+    $("#choose_battle").dialog({
+       dialogClass: "flora",
+       buttons: button_colors,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
 }
 
 function update_points(type, amount) {

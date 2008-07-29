@@ -58,13 +58,15 @@ class StandardBoard:
                 if '!' in cell_str:
                     return Ground(special=Catastrophe())
                 elif '?' in cell_str:
-                    civ_type = cell_str[2]
-                    if civ_type == 's':
-                        return Ground(piece=SettlementCiv(), special=Unification())
-                    elif civ_type == 't':
-                        return Ground(piece=TempleCiv(), special=Unification())
-                    elif civ_type == 'm':
-                        return Ground(piece=MerchantCiv(), special=Unification())
+                    return Ground(special=Unification())
+                # XXX
+#                     civ_type = cell_str[2]
+#                     if civ_type == 's':
+#                         return Ground(piece=SettlementCiv(), special=Unification())
+#                     elif civ_type == 't':
+#                         return Ground(piece=TempleCiv(), special=Unification())
+#                     elif civ_type == 'm':
+#                         return Ground(piece=MerchantCiv(), special=Unification())
                 else:
                     return Ground()
             elif cell_str.startswith('R'):
@@ -101,6 +103,13 @@ class StandardBoard:
         self.cells = [ convert(x) for x in board_str.split('|')]
         self.data = [ {} for _ in self.cells ]
 
+    def find_unification_tile(self):
+        for cell_no, cell in enumerate(self.cells):
+            if cell.special and (cell.special.db_form() == '?'):
+                return cell_no
+
+        return None
+
     def is_ruler_placed(self, ruler_type, player_no):
         for cell_no, cell in enumerate(self.cells):
             if cell.piece and (cell.piece.db_form() == 'r' + player_no + ruler_type[6]):
@@ -129,8 +138,9 @@ class StandardBoard:
         return cell_nos
 
     def place_unification(self, cell_no, civ):
-        self.cells[cell_no].piece = civ
         self.cells[cell_no].special = Unification()
+        # XXX
+        self.cells[cell_no].special.piece = civ
 
     def save(self):
         self.board.board = self._db_form()
