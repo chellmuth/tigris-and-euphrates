@@ -302,3 +302,8 @@ def _count_tiles_for_battle(game, board):
 
     hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
     print hand.count(game.state.split("|")[1])
+
+    defense_kingdom = kingdom == kingdom1 and kingdom2 or kingdom1
+    print board.pieces_by_region[defense_kingdom][game.state.split("|")[1]]
+
+    
