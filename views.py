@@ -36,7 +36,7 @@ def choose_color(request, player_no, civ):
     for num in [ (x - 1) % g.num_players + 1 for x in range(int(player_no), int(player_no) + g.num_players) ]:
         if num in players:
             g.state = 'ATTACK|' + civ
-            g.waiting_for = g.__getattribute__('player_' + str(num))
+            g.waiting_for = num
 
     g.save()
     
@@ -259,7 +259,9 @@ def game_state_json(request, player_no):
     resp = HttpResponse(str)
     resp.headers['Content-Type'] = 'text/javascript'
 
+    _count_tiles_for_battle(g,board)
     return resp
+
 
 
 def _find_war_choices(board):
@@ -278,3 +280,25 @@ def _find_war_choices(board):
             civs.append(civ)
 
     return civs
+
+def _count_tiles_for_battle(game, board):
+    player = game.waiting_for
+
+    unification_no = board.find_unification_tile()
+    if not unification_no: return [] 
+    # XXX duplicated code
+    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
+
+    kingdom_info1 = board.pieces_by_region[kingdom1]
+    kingdom_info2 = board.pieces_by_region[kingdom2]
+
+    kingdom = None
+    for type, player_no, cell_no in kingdom_info1['rulers']:
+        if player_no == player and type == 'ruler-' + g.state.split("|")[1]:
+            kingdom = kingdom1
+    kingdom = kingdom2
+
+    print board.pieces_by_region[kingdom][game.state.split("|")[1]]
+
+    hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
+    print hand.count(game.state.split("|")[1])

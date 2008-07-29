@@ -32,8 +32,8 @@ class Game(models.Model):
     player_2_points_merchant = models.IntegerField(default=0)
     player_2_points_treasure = models.IntegerField(default=0)
 
-    waiting_for = models.ForeignKey(Player, related_name='waiting_for', blank=True, null=True)
-    current_turn = models.ForeignKey(Player, related_name='current_turn', blank=True, null=True)
+    waiting_for = models.IntegerField(default=0)
+    current_turn = models.IntegerField(default=0)
     state = models.TextField(default='NORMAL')
 
 class Hand(models.Model):
@@ -57,7 +57,14 @@ class Hand(models.Model):
 
     def remove(self, piece_no):
         self.__setattr__('piece' + str(piece_no), 'XXX')
-        
+
+    def pieces(self):
+        return [ self.__getattribute__('piece' + str(x)) for x in range(6) ]
+    
+    def count(self, civ):
+        civ = str(civ)
+        return sum([ 1 for piece in self.pieces() if piece[0] == civ[0] ])
+
 class Board(models.Model):
     game = models.ForeignKey(Game)
     turn_no = models.IntegerField(default=0)
