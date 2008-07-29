@@ -1,5 +1,5 @@
 from django.conf.urls.defaults import *
-from tigris.views import print_custom_css_board, game_state_json, drop_civ, create_game, drop_ruler, external_war
+from tigris.views import print_custom_css_board, game_state_json, drop_civ, create_game, drop_ruler, external_war, choose_color
 
 urlpatterns = patterns('',
     (r'^div/(\d+)/$', print_custom_css_board, { 'rows': 11, 'cols': 16, 'size': 50 }),
@@ -8,6 +8,8 @@ urlpatterns = patterns('',
     (r'^drop_ruler/(\d+)/(\w+)/(\d+)/$', drop_ruler),
     (r'^external_war/(\d+)/[^\d]+(\d+)/(\d+)/$', external_war),
     (r'^create_game/$', create_game),
+    (r'^choose_color/(\d)/(\w+)/$', choose_color),
+
     # Uncomment this for admin:
 #     (r'^admin/', include('django.contrib.admin.urls')),
 )

@@ -17,6 +17,31 @@ def _convert(str):
         return TempleCiv()
     
 
+def choose_color(request, player_no, civ):
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+
+    unification_no = board.find_unification_tile()
+    if not unification_no: return []
+
+    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
+
+    kingdom_info1 = board.pieces_by_region[kingdom1]
+    kingdom_info2 = board.pieces_by_region[kingdom2]
+
+    players = [ int(player) for type, player, _ in kingdom_info1['rulers'] +kingdom_info2['rulers'] if type == 'ruler-' + civ ]
+    
+    for num in [ (x - 1) % g.num_players + 1 for x in range(int(player_no), int(player_no) + g.num_players) ]:
+        if num in players:
+            g.state = 'ATTACK|' + civ
+            g.waiting_for = g.__getattribute__('player_' + str(num))
+
+    g.save()
+    
+    return game_state_json(request, player_no)
+
 def external_war(request, player_no, civ, cell):
     civ = int(civ)
     cell = int(cell)
@@ -227,7 +252,7 @@ def game_state_json(request, player_no):
     "war_choices": %s,
     "state": "%s"
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], find_war_choices(board), g.state)
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), g.state)
     
 #    print str
 
@@ -237,7 +262,7 @@ def game_state_json(request, player_no):
     return resp
 
 
-def find_war_choices(board):
+def _find_war_choices(board):
     unification_no = board.find_unification_tile()
     if not unification_no: return []
 

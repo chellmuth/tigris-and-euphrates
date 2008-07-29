@@ -12,6 +12,9 @@ class Game(models.Model):
     player_3 = models.ForeignKey(Player, related_name='player_3_player', blank=True, null=True)
     player_4 = models.ForeignKey(Player, related_name='player_4_player', blank=True, null=True)
 
+    # XXX
+    num_players = models.IntegerField(default=2)
+
     turn_no = models.IntegerField(default=0)
     action_no = models.IntegerField(default=0)
     
