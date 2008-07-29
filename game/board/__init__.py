@@ -94,7 +94,7 @@ class StandardBoard:
                 elif ruler_type == 't':
                     return Ground(piece=TempleRuler(ruler_player_no))
                 elif ruler_type == 'f':
-                    return River(piece=FarmRuler(ruler_player_no))
+                    return Ground(piece=FarmRuler(ruler_player_no))
                 elif ruler_type == 'm':
                     return Ground(piece=MerchantRuler(ruler_player_no))
             elif cell_str.startswith('M'):
