@@ -163,7 +163,7 @@ class StandardBoard:
             region = self.data[cell_no]['adjacent_kingdoms'][0]
         except IndexError:
             return None
-        
+
         for name, player_no, _ in self.pieces_by_region[region]['rulers']:
             if name == 'ruler-' + civ.css_class_name():
                 return player_no
@@ -180,6 +180,32 @@ class StandardBoard:
 
     def add_civ(self, cell_no, civ):
         self.cells[cell_no].piece = civ
+
+    def external_war_removal(self, region, civ):
+        count = 0
+
+        for type, _, cell_no in self.pieces_by_region[region]['rulers']:
+            if type.split("-")[1] == civ:
+                self[cell_no].piece = None
+                count += 1
+
+        for cell_no in self.pieces_by_region[region][civ]:
+            mark = []
+
+            def assign_mark(index):
+                mark.append(index)
+
+            # XXX Check for treasure, too
+            if civ == 'temple':
+                pred = lambda index: self[index].has_ruler()
+                do_on_adjacent_cells(cell_no, self, pred, assign_mark)
+
+            if not mark:
+                self[cell_no].piece = None
+                count += 1
+
+        return count
+
 
 def build_board_data(board):
     regions = identify_regions(board)
@@ -205,15 +231,15 @@ def identify_regions(board):
 """
     main_stack = [(cell, cell_no) for cell_no, cell in enumerate(board)]
     cell_no_visited = [ 0 for x in main_stack ]
-    
+
     for cell, cell_no in main_stack:
         cell_no_visited[cell_no] = 0
-    
+
     def _label_all_neighbors(cell_no, region_count):
         if cell_no_visited[cell_no]:
             return
         cell_no_visited[cell_no] = region_count
-     
+
         unvisited = lambda index: board[index].has_piece() and not cell_no_visited[index]
         recursive_label = lambda index: _label_all_neighbors(index, region_count)
         do_on_adjacent_cells(cell_no, board, pred=unvisited, func=recursive_label)
@@ -229,7 +255,7 @@ def identify_regions(board):
 
 def identify_kingdoms(region_list, board):
     assert(len(region_list) == len(board))
-    
+
     regions = set()
     for region_no, cell in zip(region_list, board):
         if cell.has_ruler():
@@ -240,7 +266,7 @@ def identify_kingdoms(region_list, board):
 def do_on_adjacent_cells(cell_no, board, pred, func):
     cur_row = cell_no / board.columns
     cur_col = cell_no % board.columns
-    
+
     top_index = cell_no - board.columns
     bottom_index = cell_no + board.columns
     left_index = cell_no - 1
@@ -254,16 +280,16 @@ def do_on_adjacent_cells(cell_no, board, pred, func):
         func(left_index)
     if cur_col + 1 < board.columns and pred(right_index):
         func(right_index)
-    
+
 def pieces_by_region(board, regions):
     """Takes a board, and a list where list[cell_no] = region_no.
-Returns an list indexed by cell_no where 
+Returns an list indexed by cell_no where
 list[region_no] = { 'rulers': [ ruler objects ],
                     'temples': [ temple indices ],
                     'settlements': [], etc
                   }
 """
-    pieces_by_region = [ { 
+    pieces_by_region = [ {
             'rulers': [],
             'temple': [],
             'settlement': [],
@@ -339,7 +365,7 @@ def ruler_intersect(board, kingdoms_list):
             return True
 
     return False
-                                        
+
 def safe_tile(board, cell_no, is_ground=True):
     return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground == is_ground and (len(board.data[cell_no]['adjacent_kingdoms']) <= 1 or
                                                                                       (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and 
@@ -360,7 +386,7 @@ def safe_ruler(board, cell_no, ruler_type, player_no):
 
 def internal_war_ruler(board, cell_no, ruler_type, player_no):
     if board.is_ruler_placed(ruler_type, player_no): return False
-    
+
     rulers_in_kingdom = []
     if len(board.data[cell_no]['adjacent_kingdoms']) is 1:
         rulers_in_kingdom = [ ruler for ruler, _, _ in board.pieces_by_region[board.data[cell_no]['adjacent_kingdoms'][0]]['rulers'] ]
