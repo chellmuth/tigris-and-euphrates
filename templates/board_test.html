@@ -62,6 +62,7 @@ function setmode(type) {
         $(this).dialog("destroy");
       }});
 
+    $("#commit_choices").html("You have "+state['attack']['attack_board'].length+" tiles on the board</br>Your opponent has "+state['attack']['defend_board'].length+" tiles on the board</br>You have "+state['attack']['tiles_available']+" tiles in your hand you can contribute" );
     $("#commit_choices").dialog({
        dialogClass: "flora",
        buttons: button_choices,
