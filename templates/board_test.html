@@ -47,6 +47,7 @@ function setmode(type) {
        modal: true
     });
   }
+  //XXX code duplication
   else if (type.match(/^ATTACK/)) {
     button_choices = [];
 
@@ -63,6 +64,30 @@ function setmode(type) {
       }});
 
     $("#commit_choices").html("You have "+state['attack']['attack_board'].length+" tiles on the board</br>Your opponent has "+state['attack']['defend_board'].length+" tiles on the board</br>You have "+state['attack']['tiles_available']+" tiles in your hand you can contribute" );
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+  else if (type.match(/^DEFEND/)) {
+    button_choices = [];
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=state['defend']['tiles_available']; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://localhost:8000/defend_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }});
+
+    $("#commit_choices").html("You have "+state['defend']['defend_board'].length+" tiles on the board</br>Your opponent has "+state['defend']['attack_board'].length+" + "+state['defend']['attack_committed']+" tiles</br>You have "+state['defend']['tiles_available']+" tiles in your hand you can contribute" );
     $("#commit_choices").dialog({
        dialogClass: "flora",
        buttons: button_choices,
