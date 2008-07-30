@@ -65,6 +65,19 @@ class Hand(models.Model):
         civ = str(civ)
         return sum([ 1 for piece in self.pieces() if piece[0] == civ[0] ])
 
+    def batch_remove(self, civ, count):
+        count = int(count)
+        if self.count(civ) < count: return False
+
+        for index, piece in enumerate(self.pieces()):
+            if piece[0] == civ[0]:
+                self.remove(index)
+                count -= 1
+            if count == 0: return True
+        return False
+                
+
+
 class Board(models.Model):
     game = models.ForeignKey(Game)
     turn_no = models.IntegerField(default=0)

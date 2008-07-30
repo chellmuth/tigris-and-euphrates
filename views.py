@@ -17,6 +17,41 @@ def _convert(str):
         return TempleCiv()
     
 
+def attack_commit(request, player_no, tile_count):
+    g = Game.objects.get(id=1)
+    if not g.state.startswith('ATTACK'): return False
+
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+
+    civ = g.state.split("|")[1]
+
+    if not hand.batch_remove(civ, tile_count): return False
+    hand.save()
+    
+    g.state = 'DEFEND|' + civ + "|" + tile_count
+
+    unification_no = board.find_unification_tile()
+    if not unification_no: return []
+
+    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
+
+    kingdom_info1 = board.pieces_by_region[kingdom1]
+    kingdom_info2 = board.pieces_by_region[kingdom2]
+
+    players = [ int(player) for type, player, _ in kingdom_info1['rulers'] +kingdom_info2['rulers'] if type == 'ruler-' + civ ]
+
+    for num in reversed([ (x - 1) % g.num_players + 1 for x in range(int(player_no), int(player_no) + g.num_players) ]):
+        if num in players:
+            g.waiting_for = num
+            break
+
+    g.save()
+
+    return game_state_json(request, player_no)
+
 def choose_color(request, player_no, civ):
     g = Game.objects.get(id=1)
     board = StandardBoard(g,1)
@@ -37,6 +72,7 @@ def choose_color(request, player_no, civ):
         if num in players:
             g.state = 'ATTACK|' + civ
             g.waiting_for = num
+            break
 
     g.save()
     
@@ -64,6 +100,7 @@ def external_war(request, player_no, civ, cell):
         board.place_unification(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         hand.remove(civ)
         g.state = 'CHOOSE_COLOR'
+        g.waiting_for = player_no
 
     g.save()
     board.save()
@@ -355,7 +392,7 @@ def _get_kingdom_for_player_in_war(game, board, state):
 
     kingdom = None
     for type, player_no, cell_no in kingdom_info1['rulers']:
-        if player_no == player and type == 'ruler-' + g.state.split("|")[1]:
+        if player_no == player and type == 'ruler-' + state:
             kingdom = kingdom1
     kingdom = kingdom2
     

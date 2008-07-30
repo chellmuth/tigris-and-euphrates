@@ -32,7 +32,7 @@ function json_callback(data) {
 
 function setmode(type) {
   if (type == 'CHOOSE_COLOR') {
-    button_colors = [];
+    button_colors = {};
     $.each(state['war_choices'], function(i, civ) {
       button_colors[civ] = function() {
         $.getJSON("http://localhost:8000/choose_color/{{ player_no }}/" + civ + "/", function (data) { json_callback(data); });
