@@ -214,7 +214,12 @@ def game_state_json(request, player_no):
     points = {}
     for civ in [ 'temple', 'settlement', 'farm', 'merchant', 'treasure' ]:
         points[civ] = g.__getattribute__(player_no_prefix + civ)
+
+    attack_info = _get_attack_info(g, board)
+    defend_info = _get_defend_info(g, board)
     
+    state = (g.waiting_for == int(player_no)) and g.state or 'NOTYOU'
+
     str = """
 {
    "legal_ground_moves": %s,
@@ -250,18 +255,27 @@ def game_state_json(request, player_no):
          "treasure": %s
        },
     "war_choices": %s,
+    "attack":
+       { "tiles_available": %s,
+         "attack_board": %s,
+         "defend_board": %s
+       },
+    "defend":
+       { "tiles_available": %s,
+         "defend_board": %s,
+         "attack_committed": %s,
+         "attack_board": %s
+       },
     "state": "%s"
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), g.state)
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, [], [], [], tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], state)
     
 #    print str
 
     resp = HttpResponse(str)
     resp.headers['Content-Type'] = 'text/javascript'
 
-    _count_tiles_for_battle(g,board)
     return resp
-
 
 
 def _find_war_choices(board):
@@ -281,7 +295,54 @@ def _find_war_choices(board):
 
     return civs
 
-def _count_tiles_for_battle(game, board):
+# XXX A
+def _get_attack_info(game, board):
+    attack_info = { 'tiles_available': 0, 'attack_board': 0, 'defend_board': 0 }
+    if game.state.split("|")[0] != 'ATTACK': return attack_info
+
+    player = game.waiting_for
+
+    kingdom = _get_kingdom_for_player_in_war(game, board, game.state.split("|")[0])
+    if not kingdom: return attack_info
+    
+    attack_info['attack_board'] = board.pieces_by_region[kingdom][game.state.split("|")[1]]
+
+    hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
+    attack_info['tiles_available'] =  hand.count(game.state.split("|")[1])
+
+    unification_no = board.find_unification_tile()
+    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
+    defense_kingdom = kingdom == kingdom1 and kingdom2 or kingdom1
+    attack_info['defend_board'] =  board.pieces_by_region[defense_kingdom][game.state.split("|")[1]]
+    
+    return attack_info
+
+# XXX A
+def _get_defend_info(game, board):
+    attack_info = { 'tiles_available': 0, 'attack_board': 0, 'defend_board': 0, 'attack_committed': 0 }
+    if game.state.split("|")[0] != 'DEFEND': return attack_info
+
+    player = game.waiting_for
+
+    kingdom = _get_kingdom_for_player_in_war(game, board, game.state.split("|")[0])
+    if not kingdom: return attack_info
+
+    attack_info['defend_board'] = board.pieces_by_region[kingdom][game.state.split("|")[1]]
+
+    hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
+    attack_info['tiles_available'] =  hand.count(game.state.split("|")[1])
+
+    unification_no = board.find_unification_tile()
+    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
+    defense_kingdom = kingdom == kingdom1 and kingdom2 or kingdom1
+    attack_info['attack_board'] =  board.pieces_by_region[defense_kingdom][game.state.split("|")[1]]
+
+    attack_info['attack_committed'] = game.state.split("|")[2]
+    
+    return attack_info
+
+# XXX A THIS WHOLE SECTION SUCKS
+def _get_kingdom_for_player_in_war(game, board, state):
     player = game.waiting_for
 
     unification_no = board.find_unification_tile()
@@ -297,13 +358,5 @@ def _count_tiles_for_battle(game, board):
         if player_no == player and type == 'ruler-' + g.state.split("|")[1]:
             kingdom = kingdom1
     kingdom = kingdom2
-
-    print board.pieces_by_region[kingdom][game.state.split("|")[1]]
-
-    hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
-    print hand.count(game.state.split("|")[1])
-
-    defense_kingdom = kingdom == kingdom1 and kingdom2 or kingdom1
-    print board.pieces_by_region[defense_kingdom][game.state.split("|")[1]]
-
     
+    return kingdom

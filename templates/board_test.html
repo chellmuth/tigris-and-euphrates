@@ -32,7 +32,7 @@ function json_callback(data) {
 
 function setmode(type) {
   if (type == 'CHOOSE_COLOR') {
-    button_colors = {}
+    button_colors = [];
     $.each(state['war_choices'], function(i, civ) {
       button_colors[civ] = function() {
         $.getJSON("http://localhost:8000/choose_color/{{ player_no }}/" + civ + "/", function (data) { json_callback(data); });
@@ -42,6 +42,29 @@ function setmode(type) {
     $("#choose_battle").dialog({
        dialogClass: "flora",
        buttons: button_colors,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+  else if (type.match(/^ATTACK/)) {
+    button_choices = [];
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=state['attack']['tiles_available']; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://localhost:8000/attack_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }});
+
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
        draggable: false,
        resizable: false,
        modal: true
@@ -450,6 +473,7 @@ function call_json() {
 
 <div id="external_confirm" title="External War?">Are you sure you want to start an external war?</div>
 <div id="choose_battle" title="Choose Color!">Choose the color for the next battle</div>
+<div id="commit_choices" title="Choose Number of Tiles!">How many tiles to contribute?</div>
 
 <div id="points_temple"></div>
 <div id="points_settlement"></div>
