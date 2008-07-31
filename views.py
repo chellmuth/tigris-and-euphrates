@@ -33,21 +33,7 @@ def attack_commit(request, player_no, tile_count):
     
     g.state = 'DEFEND|' + civ + "|" + tile_count
 
-    unification_no = board.find_unification_tile()
-    if not unification_no: return []
-
-    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
-
-    kingdom_info1 = board.pieces_by_region[kingdom1]
-    kingdom_info2 = board.pieces_by_region[kingdom2]
-
-    players = [ int(player) for type, player, _ in kingdom_info1['rulers'] +kingdom_info2['rulers'] if type == 'ruler-' + civ ]
-
-    for num in reversed([ (x - 1) % g.num_players + 1 for x in range(int(player_no), int(player_no) + g.num_players) ]):
-        if num in players:
-            g.waiting_for = num
-            break
-
+    g.waiting_for = _get_defender(g, board)
     g.save()
 
     return game_state_json(request, player_no)
@@ -58,21 +44,8 @@ def choose_color(request, player_no, civ):
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
 
-    unification_no = board.find_unification_tile()
-    if not unification_no: return []
-
-    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
-
-    kingdom_info1 = board.pieces_by_region[kingdom1]
-    kingdom_info2 = board.pieces_by_region[kingdom2]
-
-    players = [ int(player) for type, player, _ in kingdom_info1['rulers'] +kingdom_info2['rulers'] if type == 'ruler-' + civ ]
-    
-    for num in [ (x - 1) % g.num_players + 1 for x in range(int(player_no), int(player_no) + g.num_players) ]:
-        if num in players:
-            g.state = 'ATTACK|' + civ
-            g.waiting_for = num
-            break
+    g.state = 'ATTACK|' + civ
+    g.waiting_for = _get_attacker(g, board)
 
     g.save()
     
@@ -102,7 +75,9 @@ def external_war(request, player_no, civ, cell):
         g.state = 'CHOOSE_COLOR'
         g.waiting_for = player_no
 
+    g.current_turn = player_no
     g.save()
+
     board.save()
     hand.save()
 
@@ -397,3 +372,33 @@ def _get_kingdom_for_player_in_war(game, board, state):
     kingdom = kingdom2
     
     return kingdom
+
+def _get_attacker(game, board):
+    return _get_player(game, board, True)
+
+def _get_defender(game, board):
+    return _get_player(game, board, False)
+
+# XXX game.current_player is only updated *SOMETIMES*
+def _get_player(game, board, find_attacker=True):
+    civ = game.state.split("|")[1]
+
+    unification_no = board.find_unification_tile()
+    if not unification_no: raise NotInWarException()
+
+    kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
+
+    kingdom_info1 = board.pieces_by_region[kingdom1]
+    kingdom_info2 = board.pieces_by_region[kingdom2]
+
+    fighters = [ int(player) for type, player, _ in kingdom_info1['rulers'] +kingdom_info2['rulers'] if type == 'ruler-' + civ ]
+
+    player_list = [ (x - 1) % game.num_players + 1 for x in range(int(game.current_turn), int(game.current_turn) + game.num_players) ]
+    if not find_attacker: player_list.reverse()
+    for num in player_list:
+        if num in fighters:
+            return num
+
+class NotInWarException(Exception):
+    pass
+
