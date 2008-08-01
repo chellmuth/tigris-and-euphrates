@@ -17,6 +17,48 @@ def _convert(str):
         return TempleCiv()
     
 
+def defend_commit(request, player_no, tile_count):
+    g = Game.objects.get(id=1)
+    if not g.state.startswith('DEFEND'): return False
+
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+
+    civ = g.state.split("|")[1]
+
+    if not hand.batch_remove(civ, tile_count): return False
+    hand.save()
+
+    defend_info = _get_defend_info(g, board)
+
+    losing_kindom = None
+    if len(defend_info['attack_board']) + int(defend_info['attack_committed']) > len(defend_info['defend_board']) + int(tile_count):
+        losing_kingdom = _get_defender_kingdom(g, board)
+
+    else:
+        losing_kingdom = _get_attacker_kingdom(g, board)
+
+    board.external_war_removal(losing_kingdom, civ)
+
+    build_board_data(board)
+
+    unification_cell_no = board.find_unification_tile()
+    more_war = external_war_tile(board, unification_cell_no)
+    if more_war:
+        g.state = 'CHOOSE_COLOR'
+        g.waiting_for = g.current_turn
+    else:
+        g.state = "REGULAR"
+        board[unification_cell_no].piece = _convert(board[unification_cell_no].special.piece)
+        board[unification_cell_no].special = None
+
+    g.save()
+    board.save()
+
+    return game_state_json(request, player_no)
+
 def attack_commit(request, player_no, tile_count):
     g = Game.objects.get(id=1)
     if not g.state.startswith('ATTACK'): return False
