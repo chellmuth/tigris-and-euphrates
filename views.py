@@ -314,7 +314,7 @@ def _get_attack_info(game, board):
 
     player = game.waiting_for
 
-    kingdom = _get_kingdom_for_player_in_war(game, board, game.state.split("|")[0])
+    kingdom = _get_attacker_kingdom(game, board)
     if not kingdom: return attack_info
     
     attack_info['attack_board'] = board.pieces_by_region[kingdom][game.state.split("|")[1]]
@@ -336,7 +336,7 @@ def _get_defend_info(game, board):
 
     player = game.waiting_for
 
-    kingdom = _get_kingdom_for_player_in_war(game, board, game.state.split("|")[0])
+    kingdom = _get_defender_kingdom(game, board)
     if not kingdom: return attack_info
 
     attack_info['defend_board'] = board.pieces_by_region[kingdom][game.state.split("|")[1]]
@@ -354,9 +354,7 @@ def _get_defend_info(game, board):
     return attack_info
 
 # XXX A THIS WHOLE SECTION SUCKS
-def _get_kingdom_for_player_in_war(game, board, state):
-    player = game.waiting_for
-
+def _get_kingdom_for_player_in_war(game, board, player):
     unification_no = board.find_unification_tile()
     if not unification_no: return [] 
     # XXX duplicated code
@@ -364,14 +362,21 @@ def _get_kingdom_for_player_in_war(game, board, state):
 
     kingdom_info1 = board.pieces_by_region[kingdom1]
     kingdom_info2 = board.pieces_by_region[kingdom2]
-
+    
     kingdom = None
     for type, player_no, cell_no in kingdom_info1['rulers']:
-        if player_no == player and type == 'ruler-' + state:
+        if int(player_no) == int(player) and type == ('ruler-' + game.state.split("|")[1]):
             kingdom = kingdom1
-    kingdom = kingdom2
+
+    if not kingdom: kingdom = kingdom2
     
     return kingdom
+
+def _get_attacker_kingdom(game, board):
+    return _get_kingdom_for_player_in_war(game, board, _get_attacker(game, board))
+
+def _get_defender_kingdom(game, board):
+    return _get_kingdom_for_player_in_war(game, board, _get_defender(game, board))
 
 def _get_attacker(game, board):
     return _get_player(game, board, True)
