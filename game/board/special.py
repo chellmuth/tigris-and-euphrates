@@ -3,7 +3,7 @@ class Special:
 
 class Unification(Special):
     def db_form(self):
-        return '?'
+        return '?' + self.piece[0]
 
 class Catastrophe(Special):
     def db_form(self):

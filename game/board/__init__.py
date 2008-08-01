@@ -58,7 +58,9 @@ class StandardBoard:
                 if '!' in cell_str:
                     return Ground(special=Catastrophe())
                 elif '?' in cell_str:
-                    return Ground(special=Unification())
+                    g =  Ground(special=Unification())
+                    g.special.piece = cell_str[-1]
+                    return g
                 # XXX
 #                     civ_type = cell_str[2]
 #                     if civ_type == 's':
@@ -105,7 +107,7 @@ class StandardBoard:
 
     def find_unification_tile(self):
         for cell_no, cell in enumerate(self.cells):
-            if cell.special and (cell.special.db_form() == '?'):
+            if cell.special and ('?' in cell.special.db_form()):
                 return cell_no
 
         return None
@@ -140,7 +142,7 @@ class StandardBoard:
     def place_unification(self, cell_no, civ):
         self.cells[cell_no].special = Unification()
         # XXX
-        self.cells[cell_no].special.piece = civ
+        self.cells[cell_no].special.piece = civ.css_class_name()
 
     def save(self):
         self.board.board = self._db_form()
