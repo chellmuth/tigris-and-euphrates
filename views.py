@@ -261,10 +261,10 @@ def game_state_json(request, player_no):
     safe_farms = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-farm', player_no) ]
     safe_merchants = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-merchant', player_no) ]
 
-    war_temples = _get_internal_war_info('temple')
-    war_settlements = _get_internal_war_info('settlement')
-    war_farms = _get_internal_war_info('farm')
-    war_merchants = _get_internal_war_info('merchant')
+    war_temples = _get_internal_war_info(board, player_no, 'temple')
+    war_settlements = _get_internal_war_info(board, player_no, 'settlement')
+    war_farms = _get_internal_war_info(board, player_no, 'farm')
+    war_merchants = _get_internal_war_info(board, player_no, 'merchant')
 
     tiles = [ hand.piece0, hand.piece1, hand.piece2, hand.piece3, hand.piece4, hand.piece5 ]
 
@@ -295,6 +295,7 @@ def game_state_json(request, player_no):
          "farm": %s,
          "merchant": %s
        },
+   "temple_count": %s, 
    "player_hand": %s,
    "unification": %s,
    "temple_civ": %s,
@@ -326,19 +327,17 @@ def game_state_json(request, player_no):
        },
     "state": "%s"
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, war_settlements, war_farms, war_merchants, tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], state)
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, war_settlements, war_farms, war_merchants, hand.count('t'), tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], state)
     
 #    print str
 
-    print board.data
-    print board.pieces_by_region
     resp = HttpResponse(str)
     resp.headers['Content-Type'] = 'text/javascript'
 
     return resp
 
 
-def _get_internal_war_info(civ_type):
+def _get_internal_war_info(board, player_no, civ_type):
     war_info = []
     for cell_no, cell in enumerate(board):
         if internal_war_ruler(board, cell_no, 'ruler-' + civ_type, player_no):
