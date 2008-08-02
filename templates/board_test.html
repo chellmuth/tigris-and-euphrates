@@ -226,7 +226,7 @@ function call_json() {
              }
              else if (war_index != -1) {
                 war_data = state['war_ruler_moves'][piece][war_index];
-                confirm_internal_battle(war_index, piece, war_data[1], state['temple_count'], war_data[2]);
+                confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2]);
              }
           }
       }
