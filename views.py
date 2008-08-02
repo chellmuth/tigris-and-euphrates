@@ -261,10 +261,13 @@ def game_state_json(request, player_no):
     safe_farms = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-farm', player_no) ]
     safe_merchants = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-merchant', player_no) ]
 
-    war_temples = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-temple', player_no) ]
-    war_settlements = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-settlement', player_no) ]
-    war_farms = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-farm', player_no) ]    
-    war_merchants = [ cell_no for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-merchant', player_no) ]
+    def get_internal_war_info(civ_type):
+        return [ [cell_no, len(board.data[cell_no]['adjacent_temples'])] for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-' + civ_type, player_no) ]
+
+    war_temples = get_internal_war_info('temple')
+    war_settlements = get_internal_war_info('settlement')
+    war_farms = get_internal_war_info('farm')
+    war_merchants = get_internal_war_info('merchant')
 
     tiles = [ hand.piece0, hand.piece1, hand.piece2, hand.piece3, hand.piece4, hand.piece5 ]
 
