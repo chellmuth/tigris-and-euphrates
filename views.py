@@ -261,13 +261,10 @@ def game_state_json(request, player_no):
     safe_farms = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-farm', player_no) ]
     safe_merchants = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-merchant', player_no) ]
 
-    def get_internal_war_info(civ_type):
-        return [ [cell_no, len(board.data[cell_no]['adjacent_temples'])] for cell_no, cell in enumerate(board) if internal_war_ruler(board, cell_no, 'ruler-' + civ_type, player_no) ]
-
-    war_temples = get_internal_war_info('temple')
-    war_settlements = get_internal_war_info('settlement')
-    war_farms = get_internal_war_info('farm')
-    war_merchants = get_internal_war_info('merchant')
+    war_temples = _get_internal_war_info('temple')
+    war_settlements = _get_internal_war_info('settlement')
+    war_farms = _get_internal_war_info('farm')
+    war_merchants = _get_internal_war_info('merchant')
 
     tiles = [ hand.piece0, hand.piece1, hand.piece2, hand.piece3, hand.piece4, hand.piece5 ]
 
@@ -333,11 +330,25 @@ def game_state_json(request, player_no):
     
 #    print str
 
+    print board.data
+    print board.pieces_by_region
     resp = HttpResponse(str)
     resp.headers['Content-Type'] = 'text/javascript'
 
     return resp
 
+
+def _get_internal_war_info(civ_type):
+    war_info = []
+    for cell_no, cell in enumerate(board):
+        if internal_war_ruler(board, cell_no, 'ruler-' + civ_type, player_no):
+            kingdom_no = board.data[cell_no]['adjacent_kingdoms'][0]
+            for defender_ruler, _, defender_cell in board.pieces_by_region[kingdom_no]['rulers']:
+                if defender_ruler == 'ruler-' + civ_type:
+                    break
+                war_info.append([cell_no, len(board.data[cell_no]['adjacent_temples']), len(board.data[defender_cell]['adjacent_temples'])])
+
+    return war_info
 
 def _find_war_choices(board):
     unification_no = board.find_unification_tile()
