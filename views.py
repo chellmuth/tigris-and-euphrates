@@ -345,7 +345,7 @@ def _get_internal_war_info(board, player_no, civ_type):
             for defender_ruler, _, defender_cell in board.pieces_by_region[kingdom_no]['rulers']:
                 if defender_ruler == 'ruler-' + civ_type:
                     break
-                war_info.append([cell_no, len(board.data[cell_no]['adjacent_temples']), len(board.data[defender_cell]['adjacent_temples'])])
+            war_info.append([cell_no, len(board.data[cell_no]['adjacent_temples']), len(board.data[defender_cell]['adjacent_temples'])])
 
     return war_info
 
