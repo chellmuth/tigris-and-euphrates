@@ -216,30 +216,17 @@ function call_json() {
              }
           }
           else {
-             switch (piece) {
-               case "ruler-settlement":
-                 index = state['legal_ruler_moves']['settlement'].indexOf(cell_no);
-                 break;
-               case "ruler-merchant":
-                 index = state['legal_ruler_moves']['merchant'].indexOf(cell_no);
-                 break;
-               case "ruler-farm":
-                 index = state['legal_ruler_moves']['farm'].indexOf(cell_no);
-                 break;
-               case "ruler-temple":
-                 index = state['legal_ruler_moves']['temple'].indexOf(cell_no);
-                 war_index = state['war_ruler_moves']['temple'].indexOf(cell_no);
-                 break;
-
-               default:
-                 index = -1;
-             }
+             war_index = -1;
+             piece = piece.substring(6);
+             index = state['legal_ruler_moves'][piece].indexOf(cell_no);
+             $.each(state['war_ruler_moves'][piece], function(i, war_data) { if(cell_no == war_data[0]) { war_index = i; } });
 
              if (index >= 0) {
-                $.getJSON("http://localhost:8000/drop_ruler/{{ player_no }}/" + piece.substring(6) + "/" + cell_no + "/", function (data) { json_callback(data); });
+                $.getJSON("http://localhost:8000/drop_ruler/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
-             else if (war_index >= 0) {
-                alert("INTERNAL BATTLE!");
+             else if (war_index != -1) {
+                war_data = state['war_ruler_moves'][piece][war_index];
+                confirm_internal_battle(war_index, piece, war_data[1], state['temple_count'], war_data[2]);
              }
           }
       }
@@ -247,6 +234,35 @@ function call_json() {
 
   });
   
+  function confirm_internal_battle(cell_no, civ_type, attack_board, tiles_available, defend_board) {
+    button_choices = {};
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=tiles_available; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://localhost:8000/internal_attack/{{ player_no }}/" + cell_no + "/" + civ_type + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+    }});
+    button_choices['cancel'] = function() {
+        $(this).dialog("close");
+    };
+
+    $("#commit_choices").html("You have "+attack_board+" tiles on the board</br>Your opponent has "+defend_board+" tiles</br>You have "+tiles_available+" tiles in your hand you can contribute");
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+
+  }
+
 {% for js in js_script %}
    {{ js }}
 {% endfor %}
