@@ -245,7 +245,7 @@ function call_json() {
 
     $.each(fake, function(index, blank) {
       button_choices[index+''] = function() {
-        $.getJSON("http://localhost:8000/internal_attack/{{ player_no }}/" + cell_no + "/" + civ_type + "/", function (data) { json_callback(data); });
+        $.getJSON("http://localhost:8000/internal_attack/{{ player_no }}/" + cell_no + "/" + civ_type + "/" + index + "/", function (data) { json_callback(data); });
         $(this).dialog("destroy");
     }});
     button_choices['cancel'] = function() {

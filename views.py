@@ -17,6 +17,29 @@ def _convert(str):
         return TempleCiv()
     
 
+def internal_attack(request, player_no, cell_no, civ, num_committed):
+    cell_no = int(cell_no)
+
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+    
+    if not internal_war_ruler(board, cell_no, 'ruler-' + civ, player_no): return False
+
+
+    print _get_internal_war_info(board, player_no, civ)
+
+    g.state = 'INTERNAL|' + civ + "|" + str(cell_no) + "|" + num_committed
+
+    g.waiting_for = _get_internal_defender(g, board, cell_no, civ)
+    g.current_turn = player_no
+
+    g.save()
+    board.save()
+
+    return game_state_json(request, player_no)
+    
 def defend_commit(request, player_no, tile_count):
     g = Game.objects.get(id=1)
     if not g.state.startswith('DEFEND'): return False
@@ -275,7 +298,9 @@ def game_state_json(request, player_no):
 
     attack_info = _get_attack_info(g, board)
     defend_info = _get_defend_info(g, board)
-    
+
+    defend_internal_info = _get_defend_internal_info(g, board)
+
     state = (g.waiting_for == int(player_no)) and g.state or 'NOTYOU'
 
     str = """
@@ -325,9 +350,15 @@ def game_state_json(request, player_no):
          "attack_committed": %s,
          "attack_board": %s
        },
-    "state": "%s"
+   "defend_internal":
+       { "tiles_available": %s,
+         "defend_board": %s,
+         "attack_committed": %s,
+         "attack_board": %s
+       },
+   "state": "%s"
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, war_settlements, war_farms, war_merchants, hand.count('t'), tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], state)
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, war_settlements, war_farms, war_merchants, hand.count('t'), tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], defend_internal_info['tiles_available'], defend_internal_info['defend_board'], defend_internal_info['attack_committed'], defend_internal_info['attack_board'], state)
     
 #    print str
 
@@ -463,6 +494,38 @@ def _get_player(game, board, find_attacker=True):
         if num in fighters:
             return num
 
+def _get_internal_defender(game, board, cell_no, civ):
+    kingdom = board.data[cell_no]['adjacent_kingdoms'][0]
+    ruler_info = board.pieces_by_region[kingdom]['rulers']
+
+    for ruler_type, player_no, _ in ruler_info:
+        if ruler_type == 'ruler-' + civ:
+            return int(player_no)
+
+    raise NotInWarException
+
+def _get_defend_internal_info(game, board):
+    defend_info = { 'tiles_available': 0, 'attack_board': 0, 'defend_board': 0, 'attack_committed': 0 }
+    if game.state.split("|")[0] != 'INTERNAL': return defend_info
+
+    _, ruler_type, attack_cell_no, attack_committed = game.state.split("|")
+    attack_cell_no = int(attack_cell_no)
+    player = game.waiting_for
+
+    defend_info['attack_board'] = len(board.data[attack_cell_no]['adjacent_temples'])
+    defend_info['attack_committed'] = attack_committed
+
+    hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
+    defend_info['tiles_available'] =  hand.count('temple')
+
+    kingdom = board.data[attack_cell_no]['adjacent_kingdoms'][0]
+    ruler_info = board.pieces_by_region[kingdom]['rulers']
+    for defend_ruler_type, _, cell_no in ruler_info:
+        if defend_ruler_type == 'ruler-' + ruler_type:
+            defend_info['defend_board'] = len(board.data[cell_no]['adjacent_temples'])
+
+    return defend_info
+
+
 class NotInWarException(Exception):
     pass
-
