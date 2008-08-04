@@ -4,7 +4,8 @@ from django.http import HttpResponse
 from game.models import Game, CivBag, Hand, Player
 from game.board import StandardBoard, build_board_data
 from game.board import split_legal_moves_by_type, safe_tile, safe_ruler, external_war_tile, internal_war_ruler
-from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv
+from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, SettlementRuler, FarmRuler, TempleRuler, MerchantRuler
+from game.board.cell import Ground
 
 def _convert(str):
     if str[0] == 's':
@@ -15,7 +16,47 @@ def _convert(str):
         return FarmCiv()
     if str[0] == 't':
         return TempleCiv()
+
+def _convert_ruler(str, player_no):
+    if str[0] == 's':
+        return SettlementRuler(player_no)
+    if str[0] == 'm':
+        return MerchantRuler(player_no)
+    if str[0] == 'f':
+        return FarmRuler(player_no)
+    if str[0] == 't':
+        return TempleRuler(player_no)
     
+
+def internal_defend(request, player_no, num_committed):
+    num_committed = int(num_committed)
+
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
+    build_board_data(board)
+
+    defend_info = _get_defend_internal_info(g, board)
+
+    p = g.__getattribute__('player_' + player_no)
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+    if not hand.batch_remove('temple', num_committed): return False
+
+    defend_amount = num_committed + defend_info['defend_board']
+    attack_amount = defend_info['attack_board'] + int(defend_info['attack_committed'])
+
+    if defend_amount < attack_amount:
+        board[defend_info['defend_cell_no']] = Ground()
+        board[defend_info['attack_cell_no']].piece = _convert_ruler(defend_info['ruler_type'], defend_info['attack_player'])
+    else:
+        pass
+
+    g.state = 'REGULAR'
+
+    hand.save()
+    g.save()
+    board.save()
+    
+    return game_state_json(request, player_no)
 
 def internal_attack(request, player_no, cell_no, civ, num_committed):
     cell_no = int(cell_no)
@@ -27,9 +68,9 @@ def internal_attack(request, player_no, cell_no, civ, num_committed):
     
     if not internal_war_ruler(board, cell_no, 'ruler-' + civ, player_no): return False
 
-
-    print _get_internal_war_info(board, player_no, civ)
-
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+    if not hand.batch_remove(civ, num_committed): return False
+    
     g.state = 'INTERNAL|' + civ + "|" + str(cell_no) + "|" + num_committed
 
     g.waiting_for = _get_internal_defender(g, board, cell_no, civ)
@@ -510,7 +551,17 @@ def _get_defend_internal_info(game, board):
 
     _, ruler_type, attack_cell_no, attack_committed = game.state.split("|")
     attack_cell_no = int(attack_cell_no)
-    player = game.waiting_for
+
+    kingdom = board.data[attack_cell_no]['adjacent_kingdoms'][0]
+    ruler_info = board.pieces_by_region[kingdom]['rulers']
+
+    for defend_ruler_type, player_no, cell_no in ruler_info:
+        if defend_ruler_type == 'ruler-' + ruler_type:
+            defend_info['defend_board'] = len(board.data[cell_no]['adjacent_temples'])
+            player = player_no
+            defend_info['defend_cell_no'] = cell_no
+
+            break
 
     defend_info['attack_board'] = len(board.data[attack_cell_no]['adjacent_temples'])
     defend_info['attack_committed'] = attack_committed
@@ -518,11 +569,10 @@ def _get_defend_internal_info(game, board):
     hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
     defend_info['tiles_available'] =  hand.count('temple')
 
-    kingdom = board.data[attack_cell_no]['adjacent_kingdoms'][0]
-    ruler_info = board.pieces_by_region[kingdom]['rulers']
-    for defend_ruler_type, _, cell_no in ruler_info:
-        if defend_ruler_type == 'ruler-' + ruler_type:
-            defend_info['defend_board'] = len(board.data[cell_no]['adjacent_temples'])
+    defend_info['defend_player'] = player
+    defend_info['attack_player'] = game.current_turn
+    defend_info['attack_cell_no'] = attack_cell_no
+    defend_info['ruler_type'] = ruler_type
 
     return defend_info
 

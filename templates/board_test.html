@@ -96,6 +96,31 @@ function setmode(type) {
        modal: true
     });
   }
+  else if (type.match(/^INTERNAL/)) {
+    button_choices = [];
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=state['defend_internal']['tiles_available']; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://localhost:8000/internal_defend/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }});
+
+    $("#commit_choices").html("You have "+state['defend_internal']['defend_board']+" tiles on the board</br>Your opponent has "+state['defend_internal']['attack_board']+" + "+state['defend_internal']['attack_committed']+" tiles</br>You have "+state['defend_internal']['tiles_available']+" tiles in your hand you can contribute" );
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+
 }
 
 function update_points(type, amount) {
