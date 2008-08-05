@@ -36,6 +36,20 @@ class Game(models.Model):
     current_turn = models.IntegerField(default=0)
     state = models.TextField(default='NORMAL')
 
+    def increment_action(self):
+        self.action_no = (self.action_no + 1) % 2
+        if self.action_no == 0:
+            self.turn_no += 1
+            self.current_turn = (self.current_turn % self.num_players) + 1
+        self.waiting_for = self.current_turn
+
+        if self.action_no == 0:
+            for player_no in xrange(1, self.num_players + 1):
+                player = self.__getattribute__('player_' + str(player_no))
+                hand = Hand.objects.filter(player=player, turn_no=1, game=self).get()
+                hand.refill_hand()
+                hand.save()
+
 class Hand(models.Model):
     player = models.ForeignKey(Player)
     turn_no = models.IntegerField()
@@ -76,7 +90,14 @@ class Hand(models.Model):
             if count == 0: return True
         return False
                 
+    def is_empty(self, piece_no):
+        return self.__getattribute__('piece' + str(piece_no)) == 'XXX'
 
+    def refill_hand(self):
+        print "refilling!", self.player.user_name
+        for i in xrange(6):
+            if self.is_empty(i):
+                self.swap(i)
 
 class Board(models.Model):
     game = models.ForeignKey(Game)

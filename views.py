@@ -27,7 +27,6 @@ def _convert_ruler(str, player_no):
     if str[0] == 't':
         return TempleRuler(player_no)
     
-
 def internal_defend(request, player_no, num_committed):
     num_committed = int(num_committed)
 
@@ -40,6 +39,7 @@ def internal_defend(request, player_no, num_committed):
     p = g.__getattribute__('player_' + player_no)
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
     if not hand.batch_remove('temple', num_committed): return False
+    hand.save()
 
     defend_amount = num_committed + defend_info['defend_board']
     attack_amount = defend_info['attack_board'] + int(defend_info['attack_committed'])
@@ -52,7 +52,8 @@ def internal_defend(request, player_no, num_committed):
 
     g.state = 'REGULAR'
 
-    hand.save()
+    g.increment_action()
+
     g.save()
     board.save()
     
@@ -67,10 +68,12 @@ def internal_attack(request, player_no, cell_no, civ, num_committed):
     p = g.__getattribute__('player_' + player_no)
     
     if not internal_war_ruler(board, cell_no, 'ruler-' + civ, player_no): return False
+    if not g.current_turn == int(player_no): return False
 
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
-    if not hand.batch_remove(civ, num_committed): return False
-    
+    if not hand.batch_remove('temple', num_committed): return False
+    hand.save()
+
     g.state = 'INTERNAL|' + civ + "|" + str(cell_no) + "|" + num_committed
 
     g.waiting_for = _get_internal_defender(g, board, cell_no, civ)
@@ -92,7 +95,9 @@ def defend_commit(request, player_no, tile_count):
 
     civ = g.state.split("|")[1]
 
+    if not int(player_no) == g.waiting_for: return False
     if not hand.batch_remove(civ, tile_count): return False
+
     hand.save()
 
     defend_info = _get_defend_info(g, board)
@@ -118,6 +123,8 @@ def defend_commit(request, player_no, tile_count):
         board[unification_cell_no].piece = _convert(board[unification_cell_no].special.piece)
         board[unification_cell_no].special = None
 
+    g.increment_action()
+
     g.save()
     board.save()
 
@@ -134,6 +141,7 @@ def attack_commit(request, player_no, tile_count):
 
     civ = g.state.split("|")[1]
 
+    if not int(player_no) == g.waiting_for: return False
     if not hand.batch_remove(civ, tile_count): return False
     hand.save()
     
@@ -149,6 +157,8 @@ def choose_color(request, player_no, civ):
     board = StandardBoard(g,1)
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
+
+    if not int(player_no) == g.waiting_for: return False
 
     g.state = 'ATTACK|' + civ
     g.waiting_for = _get_attacker(g, board)
@@ -175,11 +185,12 @@ def external_war(request, player_no, civ, cell):
     else:
         moves = [ cell_no for cell_no, cell_obj in enumerate(board) if external_war_tile(board, cell_no, is_ground=True) ]
 
-    if cell in moves:
+    if cell in moves and int(player_no) == g.current_turn:
         board.place_unification(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         hand.remove(civ)
         g.state = 'CHOOSE_COLOR'
         g.waiting_for = player_no
+    else: return False
 
     g.current_turn = player_no
     g.save()
@@ -227,9 +238,13 @@ def drop_ruler(request, player_no, ruler, cell):
 
     moves = [ cell_no for cell_no, _ in enumerate(board) if safe_ruler(board, cell_no, 'ruler-' + ruler, player_no) ]
     
-    if cell in moves:
+    if cell in moves and int(player_no) == g.current_turn:
         board.add_ruler(cell, ruler, player_no)
-        
+    else: return False
+
+    g.increment_action()
+
+    g.save()
     board.save()
 
     return game_state_json(request, player_no)
@@ -252,7 +267,7 @@ def drop_civ(request, player_no, civ, cell):
     else:
         moves = [ cell_no for cell_no, cell_obj in enumerate(board) if safe_tile(board, cell_no, is_ground=True) ]
 
-    if cell in moves:
+    if cell in moves and int(player_no) == g.current_turn:
         point_to = board.get_point(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         if point_to:
             attr_name = 'player_' + point_to + '_points_' + civ_obj.css_class_name()
@@ -260,10 +275,13 @@ def drop_civ(request, player_no, civ, cell):
             
         board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         hand.swap(civ)
-        
+        hand.save()
+    else: return False
+
+    g.increment_action()
+
     g.save()
     board.save()
-    hand.save()
 
     return game_state_json(request, player_no)
 
