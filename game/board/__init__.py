@@ -314,6 +314,15 @@ list[region_no] = { 'rulers': [ ruler objects ],
             else:
                 pieces_by_region[cur_region][name[4:]].append(cell_no)
 
+        pieces_by_region[cur_region]['treasures'] = { 'normal': [], 'corner': [] }
+        for cell_no in pieces_by_region[cur_region]['temple']:
+            treasure = board[cell_no].treasure_info()
+            if treasure:
+                if treasure.is_corner:
+                    pieces_by_region[cur_region]['treasures']['corner'].append(cell_no)
+                else:
+                    pieces_by_region[cur_region]['treasures']['normal'].append(cell_no)
+
     return pieces_by_region
 
 def adjacent_temples_by_cell_no(board):

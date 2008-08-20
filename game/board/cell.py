@@ -25,6 +25,12 @@ class Cell:
     def has_ruler(self):
         return self.has_piece() and self.piece.is_ruler
 
+    def treasure_info(self):
+        if not (self.has_piece() and (not self.piece.is_ruler) and self.piece.treasure):
+            return None
+
+        return self.piece.treasure
+
     def css_class_name(self):
         return self.piece.css_class_name()
 
