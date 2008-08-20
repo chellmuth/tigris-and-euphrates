@@ -26,13 +26,15 @@ function json_callback(data) {
   $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
   $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
   $.each(data['points'], function(i, type) { update_points(i, type); });
-  $.each(data['treasures'], function(i, cell_no) { add_treasure_to_cell(cell_no); });
+  $.each(data['treasure-normal'], function(i, cell_no) { add_treasure_to_cell(cell_no, false); });
+  $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
 
   setmode(data['state']);
 }
 
-function add_treasure_to_cell(cell_no) {
-  $("#drop" + cell_no).addClass('treasure');
+function add_treasure_to_cell(cell_no, is_corner) {
+  var class = 'treasure-' + (is_corner ? 'corner' : 'normal');
+  $("#drop" + cell_no).addClass(class);
 }
 
 function setmode(type) {
@@ -133,7 +135,7 @@ function update_points(type, amount) {
 }
 
 function place_civ_on_board(civ_type, cell_no) {
-  $("#drop" + cell_no).removeClass('unification').removeClass('treasure').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
+  $("#drop" + cell_no).removeClass('unification').removeClass('treasure').removeClass('treasure-corner').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
 }
 
 function place_ruler_on_board(ruler_type, cell_info) {
@@ -420,8 +422,13 @@ function call_json() {
   z-index:19;
 }
 
-.treasure {
-  background-image: url(http://localhost/media/board/treasure.png);
+.treasure-normal {
+  background-image: url(http://localhost/media/board/treasure-normal.png);
+  z-index:20;
+}
+
+.treasure-corner {
+  background-image: url(http://localhost/media/board/treasure-corner.png);
   z-index:20;
 }
 

@@ -1,6 +1,6 @@
 from game.models import Board
 from game.board.cell import Ground, River
-from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, SettlementRuler, FarmRuler, TempleRuler, MerchantRuler, GroundMonument, RiverMonument
+from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, SettlementRuler, FarmRuler, TempleRuler, MerchantRuler, GroundMonument, RiverMonument, Treasure
 from game.board.special import Unification, Catastrophe
 
 def _convert_ruler(str, player_no):
@@ -21,15 +21,16 @@ class StandardBoard:
     cells = []
 
     G, T, R  = 'G','T', 'R'
+    C = 'T*'
     default_board = (G, G, G, G, R, R, R, R, R, G, T, G, R, G, G, G,
-                     G, T, G, G, R, G, G, G, G, G, G, G, R, G, G, T,
+                     G, C, G, G, R, G, G, G, G, G, G, G, R, G, G, C,
                      G, G, G, R, R, T, G, G, G, G, G, G, R, R, G, G,
                      R, R, R, R, G, G, G, G, G, G, G, G, G, R, R, R,
                      G, G, G, G, G, G, G, G, G, G, G, G, G, T, R, R,
                      G, G, G, G, G, G, G, G, G, G, G, G, G, G, R, G,
                      R, R, R, R, G, G, G, G, T, G, G, G, R, R, R, G,
-                     G, T, G, R, R, R, R, G, G, G, G, G, R, G, G, G,
-                     G, G, G, G, G, G, R, R, R, R, R, R, R, G, T, G,
+                     G, C, G, R, R, R, R, G, G, G, G, G, R, G, G, G,
+                     G, G, G, G, G, G, R, R, R, R, R, R, R, G, C, G,
                      G, G, G, G, G, T, G, G, G, G, G, G, G, G, G, G,
                      G, G, G, G, G, G, G, G, G, G, T, G, G, G, G, G,)
     default_board_string = '|'.join(default_board)
@@ -87,7 +88,10 @@ class StandardBoard:
             elif cell_str.startswith('m'):
                 return Ground(piece=MerchantCiv())
             elif cell_str.startswith('T'):
-                return Ground(piece=TempleCiv(is_treasure=True))
+                if cell_str.startswith('T*'):
+                    return Ground(piece=TempleCiv(treasure=Treasure(is_corner=True)))
+                else:
+                    return Ground(piece=TempleCiv(treasure=Treasure(is_corner=False)))
             elif cell_str.startswith('r'):
                 ruler_type = cell_str[2]
                 ruler_player_no = cell_str[1]

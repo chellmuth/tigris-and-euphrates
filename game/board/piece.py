@@ -2,7 +2,7 @@ class Piece:
     is_ruler = False
 
 class Civilization(Piece):
-    is_treasure = False
+    treasure = None
 
     def __init__(self, id=None): # XXX FIXME
         self.id = id
@@ -34,12 +34,12 @@ class FarmCiv(Civilization):
         return 'civ-farm'
 
 class TempleCiv(Civilization):
-    def __init__(self, id=None, is_treasure=False):
+    def __init__(self, id=None, treasure=None):
         Civilization.__init__(self, id)
-        self.is_treasure = is_treasure
+        self.treasure = treasure
 
     def db_form(self):
-        return self.is_treasure and 'T' or 't'
+        return self.treasure and self.treasure.db_form() or 't'
 
     def unique_id(self):
         return 't' + str(self.id)
@@ -63,6 +63,14 @@ class MerchantCiv(Civilization):
     def name(self):
         return 'civ-merchant'
 
+class Treasure:
+    is_corner = False
+
+    def __init__(self, is_corner=False):
+        self.is_corner = is_corner
+
+    def db_form(self):
+        return self.is_corner and 'T*' or 'T'
 
 class Ruler(Piece):
     is_ruler = True
