@@ -26,8 +26,13 @@ function json_callback(data) {
   $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
   $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
   $.each(data['points'], function(i, type) { update_points(i, type); });
+  $.each(data['treasures'], function(i, cell_no) { add_treasure_to_cell(cell_no); });
 
   setmode(data['state']);
+}
+
+function add_treasure_to_cell(cell_no) {
+  $("#drop" + cell_no).addClass('treasure');
 }
 
 function setmode(type) {
@@ -412,6 +417,12 @@ function call_json() {
 
 .civ-temple {
   background-color: red;
+  z-index:19;
+}
+
+.treasure {
+  background-image: url(http://localhost/media/board/treasure.png);
+  z-index:20;
 }
 
 .civ-merchant {
