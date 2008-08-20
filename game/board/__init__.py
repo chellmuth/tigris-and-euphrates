@@ -109,6 +109,18 @@ class StandardBoard:
         self.cells = [ convert(x) for x in board_str.split('|')]
         self.data = [ {} for _ in self.cells ]
 
+    def treasure_to_claim(self):
+        for region in self.pieces_by_region:
+            player = None
+            for type, player_no, _ in region['rulers']:
+                if type.split("-")[1] == 'merchant':
+                    player = player_no
+
+            if len(region['treasures']['corner']) + len(region['treasures']['normal']) > 1 and player:
+                return { 'player_no': player,
+                         'corner': region['treasures']['corner'],
+                         'normal': region['treasures']['normal'], }
+
     def find_unification_tile(self):
         for cell_no, cell in enumerate(self.cells):
             if cell.special and ('?' in cell.special.db_form()):
@@ -300,7 +312,8 @@ list[region_no] = { 'rulers': [ ruler objects ],
             'temple': [],
             'settlement': [],
             'farm': [],
-            'merchant': []
+            'merchant': [],
+            'treasures': { 'normal': [], 'corner': [] }
           } for x in range(max(regions) + 1) ]
 
     for cur_region in range(1, max(regions) + 1):
@@ -314,7 +327,6 @@ list[region_no] = { 'rulers': [ ruler objects ],
             else:
                 pieces_by_region[cur_region][name[4:]].append(cell_no)
 
-        pieces_by_region[cur_region]['treasures'] = { 'normal': [], 'corner': [] }
         for cell_no in pieces_by_region[cur_region]['temple']:
             treasure = board[cell_no].treasure_info()
             if treasure:
