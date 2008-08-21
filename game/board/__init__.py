@@ -109,6 +109,7 @@ class StandardBoard:
         self.cells = [ convert(x) for x in board_str.split('|')]
         self.data = [ {} for _ in self.cells ]
 
+#   XXX todo: unit test this function
     def treasure_to_claim(self):
         for region in self.pieces_by_region:
             player = None
@@ -117,9 +118,41 @@ class StandardBoard:
                     player = player_no
 
             if len(region['treasures']['corner']) + len(region['treasures']['normal']) > 1 and player:
-                return { 'player_no': player,
-                         'corner': region['treasures']['corner'],
-                         'normal': region['treasures']['normal'], }
+                treasure_info =  { 'player_no': player,
+                                   'corner': region['treasures']['corner'],
+                                   'normal': region['treasures']['normal'], }
+                treasure_info.update(self._analyze_treasure(treasure_info))
+                return treasure_info
+        return []
+
+#   XXX todo: unit test this function
+    def _analyze_treasure(self, treasure):
+        num_corner = len(treasure['corner'])
+        num_normal = len(treasure['normal'])
+        num_claim = num_corner + num_normal - 1
+
+        must_choose, can_choose, num_choose = [], [], 0
+        if num_corner > 0:
+            if num_corner == num_claim:
+                must_choose = treasure['corner']
+                can_choose = []
+                num_choose = 0
+            elif num_corner < num_claim:
+                must_choose = treasure['corner']
+                can_choose = treasure['normal']
+                num_choose = num_claim - num_corner
+            elif num_corner < num_claim:
+                must_choose = []
+                can_choose = treasure['corner']
+                num_choose = num_claim
+        else:
+            must_choose = []
+            can_choose = treasure['corner']
+            num_choose = num_claim
+
+        return { 'must_choose': must_choose,
+                 'can_choose': can_choose,
+                 'num_choose': num_choose }
 
     def find_unification_tile(self):
         for cell_no, cell in enumerate(self.cells):
