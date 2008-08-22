@@ -278,6 +278,11 @@ def drop_civ(request, player_no, civ, cell):
         hand.save()
     else: return False
 
+    treasure = board.treasure_to_claim()
+    if treasure:
+        g.waiting_for = treasure['player_no']
+        g.state = 'TREASURE'
+
     g.increment_action()
 
     g.save()

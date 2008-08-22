@@ -127,7 +127,29 @@ function setmode(type) {
        modal: true
     });
   }
+  else if (type.match(/^TREASURE/)) {
+    set_draggables(false);
+    $.each(state['treasure_info']['can_choose'],
+           function(i, cell_no) {
+             $("#drop" + cell_no).bind("click", function(e) {
+                                                  $(this).toggleClass('selected-treasure');
+                                                  check_selected_treasure();
+                                                });
+           });
+    $.each(state['treasure_info']['must_choose'],
+           function(i, cell_no) {
+             $("#drop" + cell_no).addClass('selected-treasure');
+             check_selected_treasure();
+           });
+  }
+}
 
+function check_selected_treasure() {
+  var total_treasure = state['treasure_info']['must_choose'].length +
+                       state['treasure_info']['num_choose'];
+  if (total_treasure == $(".selected-treasure").length) {
+    alert("READY TO GO?");
+  }
 }
 
 function update_points(type, amount) {
@@ -478,6 +500,10 @@ function call_json() {
 
 .ruler-temple-2 {
   background-image: url(http://localhost/media/pieces/rulers/B-Temple.png);
+}
+
+.selected-treasure {
+  border: 2px solid black;
 }
 
 #points_temple {
