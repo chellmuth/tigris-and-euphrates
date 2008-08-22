@@ -140,9 +140,9 @@ function setmode(type) {
                                                   else {
                                                     if (total_treasure > $(".selected-treasure").length) {
                                                       $(this).addClass('selected-treasure');
+                                                      check_selected_treasure();
                                                     }
                                                   }
-                                                  check_selected_treasure();
                                                 });
            });
     $.each(state['treasure_info']['must_choose'],
@@ -157,8 +157,32 @@ function check_selected_treasure() {
   var total_treasure = state['treasure_info']['must_choose'].length +
                        state['treasure_info']['num_choose'];
   if (total_treasure == $(".selected-treasure").length) {
-    alert("READY TO GO?");
+    var button_choices = {};
+    button_choices['yes'] = function() {
+      $.getJSON("http://localhost:8000/choose_treasure/{{ player_no }}/" + jquery_to_list($(".selected-treasure")) + "/", function (data) { json_callback(data); });
+      $(this).dialog("destroy");
+    };
+
+    button_choices['no'] = function() {
+      $(this).dialog("destroy");
+    };
+
+    $("#confirm_treasure").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
   }
+}
+
+function jquery_to_list(elms) {
+  var str = '';
+  $.each(elms, function(i, elm) {
+    str += elm.id;
+  });
+  return str.replace(/drop/g, "_").substring(1);
 }
 
 function update_points(type, amount) {
@@ -594,12 +618,12 @@ function call_json() {
 <div id="external_confirm" title="External War?">Are you sure you want to start an external war?</div>
 <div id="choose_battle" title="Choose Color!">Choose the color for the next battle</div>
 <div id="commit_choices" title="Choose Number of Tiles!">How many tiles to contribute?</div>
+<div id="confirm_treasure">Would you like to choose these treasures?</div>
 
 <div id="points_temple"></div>
 <div id="points_settlement"></div>
 <div id="points_farm"></div>
 <div id="points_merchant"></div>
 <div id="points_treasure"></div>
-
 </body>
 </html>
