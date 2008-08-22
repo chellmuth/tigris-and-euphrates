@@ -123,7 +123,7 @@ class StandardBoard:
                                    'normal': region['treasures']['normal'], }
                 treasure_info.update(self._analyze_treasure(treasure_info))
                 return treasure_info
-        return []
+        return {}
 
 #   XXX todo: unit test this function
     def _analyze_treasure(self, treasure):

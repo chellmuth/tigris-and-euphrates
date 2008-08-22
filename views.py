@@ -27,6 +27,24 @@ def _convert_ruler(str, player_no):
     if str[0] == 't':
         return TempleRuler(player_no)
     
+def choose_treasure(request, player_no, cell_nos):
+    cell_nos = [ int(x) for x in cell_nos.split("_") ]
+
+    g = Game.objects.get(id=1)
+    board = StandardBoard(g,1)
+    build_board_data(board)
+
+    for cell_no in cell_nos:
+        board[cell_no].piece.treasure = None
+
+    g.state = 'REGULAR'
+    g.increment_action()
+    g.save()
+
+    board.save()
+
+    return game_state_json(request, player_no)
+
 def internal_defend(request, player_no, num_committed):
     num_committed = int(num_committed)
 
