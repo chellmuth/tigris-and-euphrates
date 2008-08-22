@@ -37,6 +37,9 @@ def choose_treasure(request, player_no, cell_nos):
     for cell_no in cell_nos:
         board[cell_no].piece.treasure = None
 
+    attr_name = 'player_' + player_no + '_points_treasure'
+    g.__setattr__(attr_name, g.__getattribute__(attr_name) + len(cell_nos))
+
     g.state = 'REGULAR'
     g.increment_action()
     g.save()
@@ -300,8 +303,8 @@ def drop_civ(request, player_no, civ, cell):
     if treasure:
         g.waiting_for = treasure['player_no']
         g.state = 'TREASURE'
-
-    g.increment_action()
+    else:
+        g.increment_action()
 
     g.save()
     board.save()
