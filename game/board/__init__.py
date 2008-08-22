@@ -141,13 +141,13 @@ class StandardBoard:
                 must_choose = treasure['corner']
                 can_choose = treasure['normal']
                 num_choose = num_claim - num_corner
-            elif num_corner < num_claim:
+            elif num_corner > num_claim:
                 must_choose = []
                 can_choose = treasure['corner']
                 num_choose = num_claim
         else:
             must_choose = []
-            can_choose = treasure['corner']
+            can_choose = treasure['normal']
             num_choose = num_claim
 
         return { 'must_choose': must_choose,
