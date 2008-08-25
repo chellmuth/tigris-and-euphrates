@@ -190,7 +190,7 @@ function update_points(type, amount) {
 }
 
 function place_civ_on_board(civ_type, cell_no) {
-  $("#drop" + cell_no).removeClass('unification').removeClass('treasure').removeClass('treasure-corner').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(civ_type);
+  $("#drop" + cell_no).removeClass('unification').removeClass('treasure').removeClass('treasure-corner').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').removeClass('selected-treasure').addClass(civ_type);
 }
 
 function place_ruler_on_board(ruler_type, cell_info) {
