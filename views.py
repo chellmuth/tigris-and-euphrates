@@ -352,6 +352,23 @@ left: %spx;
 
     return render_to_response('board_test.html', locals())
 
+def _get_reposition_info(board, player_no, ruler_type):
+    safe, war = [], []
+    ruler_cell = board.is_ruler_placed('ruler-' + ruler_type, player_no)
+
+    if ruler_cell:
+        piece = board[ruler_cell].piece
+        board[ruler_cell].piece = None
+        build_board_data(board)
+
+        safe = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-' + ruler_type, player_no) ]
+        war = _get_internal_war_info(board, player_no, ruler_type)
+
+        board[ruler_cell].piece = piece
+        build_board_data(board)
+
+    return safe, war
+
 def game_state_json(request, player_no):
     g = Game.objects.get(id=1)
     board = StandardBoard(g,1)
@@ -369,6 +386,11 @@ def game_state_json(request, player_no):
     safe_settlements = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-settlement', player_no) ]
     safe_farms = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-farm', player_no) ]
     safe_merchants = [ cell_no for cell_no, cell in enumerate(board) if safe_ruler(board, cell_no, 'ruler-merchant', player_no) ]
+
+    safe_reposition_merchants, war_reposition_merchants = _get_reposition_info(board, player_no, 'merchant')
+    safe_reposition_temples, war_reposition_temples = _get_reposition_info(board, player_no, 'temple')
+    safe_reposition_settlements, war_reposition_settlements = _get_reposition_info(board, player_no, 'settlement')
+    safe_reposition_farms, war_reposition_farms = _get_reposition_info(board, player_no, 'farm')
 
     war_temples = _get_internal_war_info(board, player_no, 'temple')
     war_settlements = _get_internal_war_info(board, player_no, 'settlement')
@@ -406,7 +428,19 @@ def game_state_json(request, player_no):
          "farm": %s,
          "merchant": %s
        },
+   "legal_ruler_repositions":
+       { "temple": %s,
+         "settlement": %s,
+         "farm": %s,
+         "merchant": %s
+       },
    "war_ruler_moves": 
+       { "temple": %s,
+         "settlement": %s,
+         "farm": %s,
+         "merchant": %s
+       },
+   "war_ruler_repositions":
        { "temple": %s,
          "settlement": %s,
          "farm": %s,
@@ -457,7 +491,7 @@ def game_state_json(request, player_no):
        },
    "state": "%s"
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, war_temples, war_settlements, war_farms, war_merchants, hand.count('t'), tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T') + board.get_cell_no_for_civ('T*'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('T*'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], defend_internal_info['tiles_available'], defend_internal_info['defend_board'], defend_internal_info['attack_committed'], defend_internal_info['attack_board'], treasure_info['must_choose'], treasure_info['can_choose'], treasure_info['num_choose'], state)
+""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, safe_reposition_temples, safe_reposition_settlements, safe_reposition_farms, safe_reposition_merchants, war_temples, war_settlements, war_farms, war_merchants, war_reposition_temples, war_reposition_settlements, war_reposition_farms, war_reposition_merchants, hand.count('t'), tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T') + board.get_cell_no_for_civ('T*'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('T*'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], defend_internal_info['tiles_available'], defend_internal_info['defend_board'], defend_internal_info['attack_committed'], defend_internal_info['attack_board'], treasure_info['must_choose'], treasure_info['can_choose'], treasure_info['num_choose'], state)
     
 #    print str
 

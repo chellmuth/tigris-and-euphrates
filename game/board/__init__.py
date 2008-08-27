@@ -164,7 +164,7 @@ class StandardBoard:
     def is_ruler_placed(self, ruler_type, player_no):
         for cell_no, cell in enumerate(self.cells):
             if cell.piece and (cell.piece.db_form() == 'r' + player_no + ruler_type[6]):
-                return True
+                return cell_no
 
         return None
 
@@ -442,7 +442,6 @@ def safe_ruler(board, cell_no, ruler_type, player_no):
         rulers_in_kingdom = [ ruler for ruler, _, _ in board.pieces_by_region[board.data[cell_no]['adjacent_kingdoms'][0]]['rulers'] ]
 
     return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground and len(board.data[cell_no]['adjacent_kingdoms']) <= 1 and (ruler_type not in rulers_in_kingdom) and len(board.data[cell_no]['adjacent_temples']) > 0
-
 
 def internal_war_ruler(board, cell_no, ruler_type, player_no):
     if board.is_ruler_placed(ruler_type, player_no): return False
