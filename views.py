@@ -671,3 +671,12 @@ def _get_defend_internal_info(game, board):
 
 class NotInWarException(Exception):
     pass
+
+
+def splash(request):
+    return render_to_response('splash.html', locals())
+
+def show_games(request):
+    games = Game.objects.all().order_by('id')
+
+    return render_to_response('show_games.html', locals())

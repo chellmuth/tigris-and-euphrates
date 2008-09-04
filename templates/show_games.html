@@ -1,0 +1,22 @@
+<table>
+<tr>
+    <th>Game ID</th>
+    <th>Turn No</th>
+    <th>Action No</th>
+    <th>Player 1</th>
+    <th>Player 2</th>
+    <th>Current Turn</th>
+    <th>Waiting For</th>
+</tr>
+{% for game in games %}
+<tr>
+    <td>{{ game.id }}</td>
+    <td>{{ game.turn_no }}</td>
+    <td>{{ game.action_no }}</td>
+    <td>{{ game.player_1.user_name }}</td>
+    <td>{{ game.player_2.user_name }}</td>
+    <td>{{ game.current_turn }}</td>
+    <td>{{ game.waiting_for }}</td>
+</tr>
+{% endfor %}
+</table>
