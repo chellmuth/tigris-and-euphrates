@@ -1,359 +1,12 @@
 <html>
 <head>
-</head>
-<link rel="stylesheet" type="text/css" href="http://localhost/media/css/flora.dialog.css" />
-<script type="text/javascript" src="http://localhost/media/js/jquery-1.2.6.js"></script>
-<script type="text/javascript" src="http://localhost/media/js/ui.core.js"></script>
-<script type="text/javascript" src="http://localhost/media/js/ui.dialog.js"></script>
-<script type="text/javascript" src="http://localhost/media/js/ui.draggable.js"></script>
-<script type="text/javascript" src="http://localhost/media/js/ui.droppable.js"></script>
+<link rel="stylesheet" type="text/css" href="http://manatee.local/media/css/flora.dialog.css" />
+<script type="text/javascript" src="http://manatee.local/media/js/jquery-1.2.6.js"></script>
+<script type="text/javascript" src="http://manatee.local/media/js/ui.core.js"></script>
+<script type="text/javascript" src="http://manatee.local/media/js/ui.dialog.js"></script>
+<script type="text/javascript" src="http://manatee.local/media/js/ui.draggable.js"></script>
+<script type="text/javascript" src="http://manatee.local/media/js/ui.droppable.js"></script>
 
-<script>
-var state;
-
-function json_callback(data) {
-  $("#ruler-temple #ruler-settlement #ruler-merchant #ruler-farm").show();
-  state = data;
-
-  $.each(data['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
-  $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
-  $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });
-  $.each(data['farm_civ'], function(i, cell_no) { place_civ_on_board('civ-farm', cell_no); });
-  $.each(data['merchant_civ'], function(i, cell_and_player_no) { place_civ_on_board('civ-merchant', cell_and_player_no); });
-  $.each(data['temple_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-temple', cell_and_player_no); });
-  $.each(data['settlement_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-settlement', cell_and_player_no); });
-  $.each(data['farm_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-farm', cell_and_player_no); });
-  $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
-  $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
-  $.each(data['points'], function(i, type) { update_points(i, type); });
-  $.each(data['treasure-normal'], function(i, cell_no) { add_treasure_to_cell(cell_no, false); });
-  $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
-
-  setmode(data['state']);
-}
-
-function add_treasure_to_cell(cell_no, is_corner) {
-  var class = 'treasure-' + (is_corner ? 'corner' : 'normal');
-  $("#drop" + cell_no).addClass(class);
-}
-
-function setmode(type) {
-  if (type == 'CHOOSE_COLOR') {
-    button_colors = {};
-    $.each(state['war_choices'], function(i, civ) {
-      button_colors[civ] = function() {
-        $.getJSON("http://localhost:8000/choose_color/{{ player_no }}/" + civ + "/", function (data) { json_callback(data); });
-        $(this).dialog("destroy");
-      }
-    });
-    $("#choose_battle").dialog({
-       dialogClass: "flora",
-       buttons: button_colors,
-       draggable: false,
-       resizable: false,
-       modal: true
-    });
-  }
-  //XXX code duplication
-  else if (type.match(/^ATTACK/)) {
-    button_choices = [];
-
-    // had some problems with closures using for-loop variables
-    fake = [];
-    for (tiles=0; tiles<=state['attack']['tiles_available']; tiles++) {
-      fake[tiles] = 0;
-    }
-
-    $.each(fake, function(index, blank) {
-      button_choices[index+''] = function() {
-        $.getJSON("http://localhost:8000/attack_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
-        $(this).dialog("destroy");
-      }});
-
-    $("#commit_choices").html("You have "+state['attack']['attack_board'].length+" tiles on the board</br>Your opponent has "+state['attack']['defend_board'].length+" tiles on the board</br>You have "+state['attack']['tiles_available']+" tiles in your hand you can contribute" );
-    $("#commit_choices").dialog({
-       dialogClass: "flora",
-       buttons: button_choices,
-       draggable: false,
-       resizable: false,
-       modal: true
-    });
-  }
-  else if (type.match(/^DEFEND/)) {
-    button_choices = [];
-
-    // had some problems with closures using for-loop variables
-    fake = [];
-    for (tiles=0; tiles<=state['defend']['tiles_available']; tiles++) {
-      fake[tiles] = 0;
-    }
-
-    $.each(fake, function(index, blank) {
-      button_choices[index+''] = function() {
-        $.getJSON("http://localhost:8000/defend_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
-        $(this).dialog("destroy");
-      }});
-
-    $("#commit_choices").html("You have "+state['defend']['defend_board'].length+" tiles on the board</br>Your opponent has "+state['defend']['attack_board'].length+" + "+state['defend']['attack_committed']+" tiles</br>You have "+state['defend']['tiles_available']+" tiles in your hand you can contribute" );
-    $("#commit_choices").dialog({
-       dialogClass: "flora",
-       buttons: button_choices,
-       draggable: false,
-       resizable: false,
-       modal: true
-    });
-  }
-  else if (type.match(/^INTERNAL/)) {
-    button_choices = [];
-
-    // had some problems with closures using for-loop variables
-    fake = [];
-    for (tiles=0; tiles<=state['defend_internal']['tiles_available']; tiles++) {
-      fake[tiles] = 0;
-    }
-
-    $.each(fake, function(index, blank) {
-      button_choices[index+''] = function() {
-        $.getJSON("http://localhost:8000/internal_defend/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
-        $(this).dialog("destroy");
-      }});
-
-    $("#commit_choices").html("You have "+state['defend_internal']['defend_board']+" tiles on the board</br>Your opponent has "+state['defend_internal']['attack_board']+" + "+state['defend_internal']['attack_committed']+" tiles</br>You have "+state['defend_internal']['tiles_available']+" tiles in your hand you can contribute" );
-    $("#commit_choices").dialog({
-       dialogClass: "flora",
-       buttons: button_choices,
-       draggable: false,
-       resizable: false,
-       modal: true
-    });
-  }
-  else if (type.match(/^TREASURE/)) {
-    set_draggables(false);
-    $.each(state['treasure_info']['can_choose'],
-           function(i, cell_no) {
-             $("#drop" + cell_no).bind("click", function(e) {
-                                                  var total_treasure = state['treasure_info']['must_choose'].length +
-                                                                       state['treasure_info']['num_choose'];
-                                                  if ($(this).hasClass('selected-treasure')) {
-                                                    $(this).removeClass('selected-treasure');
-                                                  }
-                                                  else {
-                                                    if (total_treasure > $(".selected-treasure").length) {
-                                                      $(this).addClass('selected-treasure');
-                                                      check_selected_treasure();
-                                                    }
-                                                  }
-                                                });
-           });
-    $.each(state['treasure_info']['must_choose'],
-           function(i, cell_no) {
-             $("#drop" + cell_no).addClass('selected-treasure');
-             check_selected_treasure();
-           });
-  }
-}
-
-function check_selected_treasure() {
-  var total_treasure = state['treasure_info']['must_choose'].length +
-                       state['treasure_info']['num_choose'];
-  if (total_treasure == $(".selected-treasure").length) {
-    var button_choices = {};
-    button_choices['yes'] = function() {
-      $.getJSON("http://localhost:8000/choose_treasure/{{ player_no }}/" + jquery_to_list($(".selected-treasure")) + "/", function (data) { json_callback(data); });
-      $(this).dialog("destroy");
-    };
-
-    button_choices['no'] = function() {
-      $(this).dialog("destroy");
-    };
-
-    $("#confirm_treasure").dialog({
-       dialogClass: "flora",
-       buttons: button_choices,
-       draggable: false,
-       resizable: false,
-       modal: true
-    });
-  }
-}
-
-function jquery_to_list(elms) {
-  var str = '';
-  $.each(elms, function(i, elm) {
-    str += elm.id;
-  });
-  return str.replace(/drop/g, "_").substring(1);
-}
-
-function update_points(type, amount) {
-  $("#points_" + type).text(amount);
-}
-
-function place_civ_on_board(civ_type, cell_no) {
-  $("#drop" + cell_no).removeClass('unification').removeClass('treasure').removeClass('treasure-corner').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').removeClass('selected-treasure').addClass(civ_type);
-}
-
-function place_ruler_on_board(ruler_type, cell_info) {
-  $("#drop" + cell_info[0]).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(ruler_type + "-" + cell_info[1]);
-  if (cell_info[1] == {{ player_no }}) {
-    $("#" + ruler_type).hide();
-  }
-}
-
-function set_civilization_tiles(index, civ_type) {
-  $("#hand" + index).show();
-
-  color = 'error';
-  type = 'ground';
-  if (civ_type[0] == 'f') {
-    color = 'civ-farm';
-    type = 'river';
-  } else if (civ_type[0] == 't') {
-    color = 'civ-temple';
-  } else if (civ_type[0] == 'm') {
-    color = 'civ-merchant';
-  } else if (civ_type[0] == 's') {
-    color = 'civ-settlement';
-  } else {
-    $("#hand" + index).hide();
-    color = 'civ-empty';
-  }
-
-  $("#hand" + index).removeAttr('class').addClass('civ').addClass(color).addClass(type).addClass('piece');
-}
-
-function config_accept(item, class) {
-}
-
-function set_draggables(enable)
-{
-  var str = enable ? "enable" : "disable";
-
-  $("#hand0").draggable(str);
-  $("#hand1").draggable(str);
-  $("#hand2").draggable(str);
-  $("#hand3").draggable(str);
-  $("#hand4").draggable(str);
-  $("#hand5").draggable(str);
-
-  $("#ruler-settlement").draggable(str);
-  $("#ruler-farm").draggable(str);
-  $("#ruler-merchant").draggable(str);
-  $("#ruler-temple").draggable(str);
-}
-
-function call_json() {
-  $.getJSON("http://localhost:8000/game_state_json/{{ player_no }}/", function (data) { json_callback(data); });
-}
-
-  $(document).ready(function(){
-    call_json();
-
-    $("#hand0").draggable({revert: true});
-    $("#hand1").draggable({revert: true});
-    $("#hand2").draggable({revert: true});
-    $("#hand3").draggable({revert: true});
-    $("#hand4").draggable({revert: true});
-    $("#hand5").draggable({revert: true});
-
-    $("#ruler-settlement").draggable({revert: true});
-    $("#ruler-farm").draggable({revert: true});
-    $("#ruler-merchant").draggable({revert: true});
-    $("#ruler-temple").draggable({revert: true});
-
-    $("#board").droppable({
-      accept: ".piece",
-      drop: function(ev, ui) {
-          var row = ev.clientY / {{ size }} | 0;
-          var col = ev.clientX / {{ size }} | 0;
-          var cell_no = row * {{ cols }} + col;
-          
-          var piece = ui.draggable.get(0).id;
-          var index = -1;
-          var war_index = -1;
-          if ((['hand0', 'hand1', 'hand2', 'hand3', 'hand4', 'hand5']).indexOf(piece) >= 0) {
-             if (ui.draggable.hasClass("ground")) {
-                index = state['legal_ground_moves'].indexOf(cell_no);
-                war_index = state['war_ground_moves'].indexOf(cell_no);
-             }
-             else {
-                index = state['legal_river_moves'].indexOf(cell_no);
-             }
-
-             if (index >= 0) {
-                $.getJSON("http://localhost:8000/drop_civ/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
-             }
-             else if (war_index >= 0) {
-                $("#external_confirm").dialog({
-                   dialogClass: "flora",
-                   buttons: {
-                     "LET'S DO THIS": function() {
-                        set_draggables(0);
-                        $.getJSON("http://localhost:8000/external_war/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
-                        $(this).dialog("destroy");
-                     },
-                     "MAKE LOVE": function() {
-                        $(this).dialog("destroy");
-                     }
-                   },
-                   draggable: false,
-                   resizable: false,
-                   modal: true
-                });
-             }
-          }
-          else {
-             war_index = -1;
-             piece = piece.substring(6);
-             index = state['legal_ruler_moves'][piece].indexOf(cell_no);
-             $.each(state['war_ruler_moves'][piece], function(i, war_data) { if(cell_no == war_data[0]) { war_index = i; } });
-
-             if (index >= 0) {
-                $.getJSON("http://localhost:8000/drop_ruler/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
-             }
-             else if (war_index != -1) {
-                war_data = state['war_ruler_moves'][piece][war_index];
-                confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2]);
-             }
-          }
-      }
-    });
-
-  });
-  
-  function confirm_internal_battle(cell_no, civ_type, attack_board, tiles_available, defend_board) {
-    button_choices = {};
-
-    // had some problems with closures using for-loop variables
-    fake = [];
-    for (tiles=0; tiles<=tiles_available; tiles++) {
-      fake[tiles] = 0;
-    }
-
-    $.each(fake, function(index, blank) {
-      button_choices[index+''] = function() {
-        $.getJSON("http://localhost:8000/internal_attack/{{ player_no }}/" + cell_no + "/" + civ_type + "/" + index + "/", function (data) { json_callback(data); });
-        $(this).dialog("destroy");
-    }});
-    button_choices['cancel'] = function() {
-        $(this).dialog("close");
-    };
-
-    $("#commit_choices").html("You have "+attack_board+" tiles on the board</br>Your opponent has "+defend_board+" tiles</br>You have "+tiles_available+" tiles in your hand you can contribute");
-    $("#commit_choices").dialog({
-       dialogClass: "flora",
-       buttons: button_choices,
-       draggable: false,
-       resizable: false,
-       modal: true
-    });
-
-  }
-
-{% for js in js_script %}
-   {{ js }}
-{% endfor %}
-</script>
 
 <style>
 {% for css in css_classes %}
@@ -432,7 +85,7 @@ function call_json() {
   left: 250px;
   height: 50px;
   width: 50px;
-  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Settlement.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/{{ ruler_prefix }}-Settlement.png);
 }
 
 #ruler-temple {
@@ -441,7 +94,7 @@ function call_json() {
   left: 300px;
   height: 50px;
   width: 50px;
-  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Temple.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/{{ ruler_prefix }}-Temple.png);
 }
 
 #ruler-merchant {
@@ -450,7 +103,7 @@ function call_json() {
   left: 350px;
   height: 50px;
   width: 50px;
-  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Merchant.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/{{ ruler_prefix }}-Merchant.png);
 }
 
 #ruler-farm {
@@ -459,7 +112,7 @@ function call_json() {
   left: 400px;
   height: 50px;
   width: 50px;
-  background-image: url(http://localhost/media/pieces/rulers/{{ ruler_prefix }}-Farm.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/{{ ruler_prefix }}-Farm.png);
 }
 
 .piece {
@@ -478,12 +131,12 @@ function call_json() {
 }
 
 .treasure-normal {
-  background-image: url(http://localhost/media/board/treasure-normal.png);
+  background-image: url(http://manatee.local/media/board/treasure-normal.png);
   z-index:20;
 }
 
 .treasure-corner {
-  background-image: url(http://localhost/media/board/treasure-corner.png);
+  background-image: url(http://manatee.local/media/board/treasure-corner.png);
   z-index:20;
 }
 
@@ -500,39 +153,39 @@ function call_json() {
 }
 
 .unification {
-  background-image: url(http://localhost/media/pieces/special/unification.png);
+  background-image: url(http://manatee.local/media/pieces/special/unification.png);
 }
 
 .ruler-settlement-1 {
-  background-image: url(http://localhost/media/pieces/rulers/A-Settlement.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/A-Settlement.png);
 }
 
 .ruler-farm-1 {
-  background-image: url(http://localhost/media/pieces/rulers/A-Farm.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/A-Farm.png);
 }
 
 .ruler-merchant-1 {
-  background-image: url(http://localhost/media/pieces/rulers/A-Merchant.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/A-Merchant.png);
 }
 
 .ruler-temple-1 {
-  background-image: url(http://localhost/media/pieces/rulers/A-Temple.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/A-Temple.png);
 }
 
 .ruler-settlement-2 {
-  background-image: url(http://localhost/media/pieces/rulers/B-Settlement.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/B-Settlement.png);
 }
 
 .ruler-farm-2 {
-  background-image: url(http://localhost/media/pieces/rulers/B-Farm.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/B-Farm.png);
 }
 
 .ruler-merchant-2 {
-  background-image: url(http://localhost/media/pieces/rulers/B-Merchant.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/B-Merchant.png);
 }
 
 .ruler-temple-2 {
-  background-image: url(http://localhost/media/pieces/rulers/B-Temple.png);
+  background-image: url(http://manatee.local/media/pieces/rulers/B-Temple.png);
 }
 
 .selected-treasure {
@@ -595,6 +248,353 @@ function call_json() {
 
 
 </style>
+
+
+</head>
+
+<script>
+var state;
+
+function json_callback(data) {
+  $("#ruler-temple #ruler-settlement #ruler-merchant #ruler-farm").show();
+  state = data;
+
+  $.each(data['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
+  $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
+  $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });
+  $.each(data['farm_civ'], function(i, cell_no) { place_civ_on_board('civ-farm', cell_no); });
+  $.each(data['merchant_civ'], function(i, cell_and_player_no) { place_civ_on_board('civ-merchant', cell_and_player_no); });
+  $.each(data['temple_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-temple', cell_and_player_no); });
+  $.each(data['settlement_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-settlement', cell_and_player_no); });
+  $.each(data['farm_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-farm', cell_and_player_no); });
+  $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
+  $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
+  $.each(data['points'], function(i, type) { update_points(i, type); });
+  $.each(data['treasure-normal'], function(i, cell_no) { add_treasure_to_cell(cell_no, false); });
+  $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
+
+  setmode(data['state']);
+}
+
+function add_treasure_to_cell(cell_no, is_corner) {
+  var my_class = 'treasure-' + (is_corner ? 'corner' : 'normal');
+  $("#drop" + cell_no).addClass(my_class);
+}
+
+function setmode(type) {
+  if (type == 'CHOOSE_COLOR') {
+    button_colors = {};
+    $.each(state['war_choices'], function(i, civ) {
+      button_colors[civ] = function() {
+        $.getJSON("http://manatee.local/choose_color/{{ player_no }}/" + civ + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }
+    });
+    $("#choose_battle").dialog({
+       dialogClass: "flora",
+       buttons: button_colors,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+  //XXX code duplication
+  else if (type.match(/^ATTACK/)) {
+    button_choices = [];
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=state['attack']['tiles_available']; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://manatee.local/attack_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }});
+
+    $("#commit_choices").html("You have "+state['attack']['attack_board'].length+" tiles on the board</br>Your opponent has "+state['attack']['defend_board'].length+" tiles on the board</br>You have "+state['attack']['tiles_available']+" tiles in your hand you can contribute" );
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+  else if (type.match(/^DEFEND/)) {
+    button_choices = [];
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=state['defend']['tiles_available']; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://manatee.local/defend_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }});
+
+    $("#commit_choices").html("You have "+state['defend']['defend_board'].length+" tiles on the board</br>Your opponent has "+state['defend']['attack_board'].length+" + "+state['defend']['attack_committed']+" tiles</br>You have "+state['defend']['tiles_available']+" tiles in your hand you can contribute" );
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+  else if (type.match(/^INTERNAL/)) {
+    button_choices = [];
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=state['defend_internal']['tiles_available']; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://manatee.local/internal_defend/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+      }});
+
+    $("#commit_choices").html("You have "+state['defend_internal']['defend_board']+" tiles on the board</br>Your opponent has "+state['defend_internal']['attack_board']+" + "+state['defend_internal']['attack_committed']+" tiles</br>You have "+state['defend_internal']['tiles_available']+" tiles in your hand you can contribute" );
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+  else if (type.match(/^TREASURE/)) {
+    set_draggables(false);
+    $.each(state['treasure_info']['can_choose'],
+           function(i, cell_no) {
+             $("#drop" + cell_no).bind("click", function(e) {
+                                                  var total_treasure = state['treasure_info']['must_choose'].length +
+                                                                       state['treasure_info']['num_choose'];
+                                                  if ($(this).hasClass('selected-treasure')) {
+                                                    $(this).removeClass('selected-treasure');
+                                                  }
+                                                  else {
+                                                    if (total_treasure > $(".selected-treasure").length) {
+                                                      $(this).addClass('selected-treasure');
+                                                      check_selected_treasure();
+                                                    }
+                                                  }
+                                                });
+           });
+    $.each(state['treasure_info']['must_choose'],
+           function(i, cell_no) {
+             $("#drop" + cell_no).addClass('selected-treasure');
+             check_selected_treasure();
+           });
+  }
+}
+
+function check_selected_treasure() {
+  var total_treasure = state['treasure_info']['must_choose'].length +
+                       state['treasure_info']['num_choose'];
+  if (total_treasure == $(".selected-treasure").length) {
+    var button_choices = {};
+    button_choices['yes'] = function() {
+      $.getJSON("http://manatee.local/choose_treasure/{{ player_no }}/" + jquery_to_list($(".selected-treasure")) + "/", function (data) { json_callback(data); });
+      $(this).dialog("destroy");
+    };
+
+    button_choices['no'] = function() {
+      $(this).dialog("destroy");
+    };
+
+    $("#confirm_treasure").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+  }
+}
+
+function jquery_to_list(elms) {
+  var str = '';
+  $.each(elms, function(i, elm) {
+    str += elm.id;
+  });
+  return str.replace(/drop/g, "_").substring(1);
+}
+
+function update_points(type, amount) {
+  $("#points_" + type).text(amount);
+}
+
+function place_civ_on_board(civ_type, cell_no) {
+  $("#drop" + cell_no).removeClass('unification').removeClass('treasure').removeClass('treasure-corner').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').removeClass('selected-treasure').addClass(civ_type);
+}
+
+function place_ruler_on_board(ruler_type, cell_info) {
+  $("#drop" + cell_info[0]).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(ruler_type + "-" + cell_info[1]);
+  if (cell_info[1] == {{ player_no }}) {
+    $("#" + ruler_type).hide();
+  }
+}
+
+function set_civilization_tiles(index, civ_type) {
+  $("#hand" + index).show();
+
+  color = 'error';
+  type = 'ground';
+  if (civ_type[0] == 'f') {
+    color = 'civ-farm';
+    type = 'river';
+  } else if (civ_type[0] == 't') {
+    color = 'civ-temple';
+  } else if (civ_type[0] == 'm') {
+    color = 'civ-merchant';
+  } else if (civ_type[0] == 's') {
+    color = 'civ-settlement';
+  } else {
+    $("#hand" + index).hide();
+    color = 'civ-empty';
+  }
+
+  $("#hand" + index).removeAttr('class').addClass('civ').addClass(color).addClass(type).addClass('piece');
+}
+
+function set_draggables(enable)
+{
+  var str = enable ? "enable" : "disable";
+
+  $("#hand0").draggable(str);
+  $("#hand1").draggable(str);
+  $("#hand2").draggable(str);
+  $("#hand3").draggable(str);
+  $("#hand4").draggable(str);
+  $("#hand5").draggable(str);
+
+  $("#ruler-settlement").draggable(str);
+  $("#ruler-farm").draggable(str);
+  $("#ruler-merchant").draggable(str);
+  $("#ruler-temple").draggable(str);
+}
+
+function call_json() {
+  $.getJSON("http://manatee.local/game_state_json/{{ player_no }}/", function (data) { json_callback(data); });
+}
+
+  $(document).ready(function(){
+    call_json();
+
+    $("#hand0").draggable({revert: true});
+    $("#hand1").draggable({revert: true});
+    $("#hand2").draggable({revert: true});
+    $("#hand3").draggable({revert: true});
+    $("#hand4").draggable({revert: true});
+    $("#hand5").draggable({revert: true});
+
+    $("#ruler-settlement").draggable({revert: true});
+    $("#ruler-farm").draggable({revert: true});
+    $("#ruler-merchant").draggable({revert: true});
+    $("#ruler-temple").draggable({revert: true});
+
+    $("#board").droppable({
+      accept: ".piece",
+      drop: function(ev, ui) {
+          var row = ev.clientY / {{ size }} | 0;
+          var col = ev.clientX / {{ size }} | 0;
+          var cell_no = row * {{ cols }} + col;
+          
+          var piece = ui.draggable.get(0).id;
+          var index = -1;
+          var war_index = -1;
+          if ((['hand0', 'hand1', 'hand2', 'hand3', 'hand4', 'hand5']).indexOf(piece) >= 0) {
+             if (ui.draggable.hasClass("ground")) {
+                index = state['legal_ground_moves'].indexOf(cell_no);
+                war_index = state['war_ground_moves'].indexOf(cell_no);
+             }
+             else {
+                index = state['legal_river_moves'].indexOf(cell_no);
+             }
+
+             if (index >= 0) {
+                $.getJSON("http://manatee.local/drop_civ/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+             }
+             else if (war_index >= 0) {
+                $("#external_confirm").dialog({
+                   dialogClass: "flora",
+                   buttons: {
+                     "LET'S DO THIS": function() {
+                        set_draggables(0);
+                        $.getJSON("http://manatee.local/external_war/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+                        $(this).dialog("destroy");
+                     },
+                     "MAKE LOVE": function() {
+                        $(this).dialog("destroy");
+                     }
+                   },
+                   draggable: false,
+                   resizable: false,
+                   modal: true
+                });
+             }
+          }
+          else {
+             war_index = -1;
+             piece = piece.substring(6);
+             index = state['legal_ruler_moves'][piece].indexOf(cell_no);
+             $.each(state['war_ruler_moves'][piece], function(i, war_data) { if(cell_no == war_data[0]) { war_index = i; } });
+
+             if (index >= 0) {
+                $.getJSON("http://manatee.local/drop_ruler/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+             }
+             else if (war_index != -1) {
+                war_data = state['war_ruler_moves'][piece][war_index];
+                confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2]);
+             }
+          }
+      }
+    });
+
+  });
+  
+  function confirm_internal_battle(cell_no, civ_type, attack_board, tiles_available, defend_board) {
+    button_choices = {};
+
+    // had some problems with closures using for-loop variables
+    fake = [];
+    for (tiles=0; tiles<=tiles_available; tiles++) {
+      fake[tiles] = 0;
+    }
+
+    $.each(fake, function(index, blank) {
+      button_choices[index+''] = function() {
+        $.getJSON("http://manatee.local/internal_attack/{{ player_no }}/" + cell_no + "/" + civ_type + "/" + index + "/", function (data) { json_callback(data); });
+        $(this).dialog("destroy");
+    }});
+    button_choices['cancel'] = function() {
+        $(this).dialog("close");
+    };
+
+    $("#commit_choices").html("You have "+attack_board+" tiles on the board</br>Your opponent has "+defend_board+" tiles</br>You have "+tiles_available+" tiles in your hand you can contribute");
+    $("#commit_choices").dialog({
+       dialogClass: "flora",
+       buttons: button_choices,
+       draggable: false,
+       resizable: false,
+       modal: true
+    });
+
+  }
+
+{% for js in js_script %}
+   {{ js }}
+{% endfor %}
+</script>
 
 <body>
 
