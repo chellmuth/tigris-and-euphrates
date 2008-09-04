@@ -505,8 +505,8 @@ function call_json() {
     $("#board").droppable({
       accept: ".piece",
       drop: function(ev, ui) {
-          var row = ev.clientY / {{ size }} | 0;
-          var col = ev.clientX / {{ size }} | 0;
+          var row = ev.pageY / {{ size }} | 0;
+          var col = ev.pageX / {{ size }} | 0;
           var cell_no = row * {{ cols }} + col;
           
           var piece = ui.draggable.get(0).id;
