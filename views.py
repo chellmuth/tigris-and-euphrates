@@ -27,10 +27,10 @@ def _convert_ruler(str, player_no):
     if str[0] == 't':
         return TempleRuler(player_no)
     
-def choose_treasure(request, player_no, cell_nos):
+def choose_treasure(request, game_id, player_no, cell_nos):
     cell_nos = [ int(x) for x in cell_nos.split("_") ]
 
-    g = Game.objects.get(id=1)
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
 
@@ -46,12 +46,12 @@ def choose_treasure(request, player_no, cell_nos):
 
     board.save()
 
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id, player_no)
 
-def internal_defend(request, player_no, num_committed):
+def internal_defend(request, game_id, player_no, num_committed):
     num_committed = int(num_committed)
 
-    g = Game.objects.get(id=1)
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
 
@@ -78,12 +78,12 @@ def internal_defend(request, player_no, num_committed):
     g.save()
     board.save()
     
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id, player_no)
 
-def internal_attack(request, player_no, cell_no, civ, num_committed):
+def internal_attack(request, game_id, player_no, cell_no, civ, num_committed):
     cell_no = int(cell_no)
 
-    g = Game.objects.get(id=1)
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
@@ -103,10 +103,10 @@ def internal_attack(request, player_no, cell_no, civ, num_committed):
     g.save()
     board.save()
 
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id, player_no)
     
-def defend_commit(request, player_no, tile_count):
-    g = Game.objects.get(id=1)
+def defend_commit(request, game_id, player_no, tile_count):
+    g = Game.objects.get(id=int(game_id))
     if not g.state.startswith('DEFEND'): return False
 
     board = StandardBoard(g,1)
@@ -149,10 +149,10 @@ def defend_commit(request, player_no, tile_count):
     g.save()
     board.save()
 
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id, player_no)
 
-def attack_commit(request, player_no, tile_count):
-    g = Game.objects.get(id=1)
+def attack_commit(request, game_id, player_no, tile_count):
+    g = Game.objects.get(id=int(game_id))
     if not g.state.startswith('ATTACK'): return False
 
     board = StandardBoard(g,1)
@@ -171,10 +171,10 @@ def attack_commit(request, player_no, tile_count):
     g.waiting_for = _get_defender(g, board)
     g.save()
 
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id, player_no)
 
-def choose_color(request, player_no, civ):
-    g = Game.objects.get(id=1)
+def choose_color(request, game_id, player_no, civ):
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
@@ -186,13 +186,13 @@ def choose_color(request, player_no, civ):
 
     g.save()
     
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id, player_no)
 
-def external_war(request, player_no, civ, cell):
+def external_war(request, game_id, player_no, civ, cell):
     civ = int(civ)
     cell = int(cell)
 
-    g = Game.objects.get(id=1)
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
@@ -219,7 +219,7 @@ def external_war(request, player_no, civ, cell):
     board.save()
     hand.save()
 
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id,player_no)
 
 def create_game(request):
     p1 = Player.objects.create(user_name='cjh')
@@ -249,10 +249,10 @@ def create_game(request):
 
     return HttpResponse()
 
-def drop_ruler(request, player_no, ruler, cell):
+def drop_ruler(request, game_id, player_no, ruler, cell):
     cell = int(cell)
 
-    g = Game.objects.get(id=1)
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
@@ -268,13 +268,13 @@ def drop_ruler(request, player_no, ruler, cell):
     g.save()
     board.save()
 
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id, player_no)
 
-def drop_civ(request, player_no, civ, cell):
+def drop_civ(request, game_id, player_no, civ, cell):
     civ = int(civ)
     cell = int(cell)
 
-    g = Game.objects.get(id=1)
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
@@ -310,15 +310,15 @@ def drop_civ(request, player_no, civ, cell):
     g.save()
     board.save()
 
-    return game_state_json(request, player_no)
+    return game_state_json(request, game_id,player_no)
 
-def print_custom_css_board(request, player_no, rows, cols, size):
+def print_custom_css_board(request, game_id, player_no, rows, cols, size):
     css_classes = []
     div_decls = []
     js_script = []
     player_no = int(player_no)
 
-    g = Game.objects.get(id=1)
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
 
     for cell_no in range(rows * cols):
@@ -369,8 +369,8 @@ def _get_reposition_info(board, player_no, ruler_type):
 
     return safe, war
 
-def game_state_json(request, player_no):
-    g = Game.objects.get(id=1)
+def game_state_json(request, game_id, player_no):
+    g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
 
@@ -677,6 +677,6 @@ def splash(request):
     return render_to_response('splash.html', locals())
 
 def show_games(request):
-    games = Game.objects.all().order_by('id')
+    games = Game.objects.order_by('id')
 
     return render_to_response('show_games.html', locals())

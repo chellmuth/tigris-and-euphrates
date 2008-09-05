@@ -286,7 +286,7 @@ function setmode(type) {
     button_colors = {};
     $.each(state['war_choices'], function(i, civ) {
       button_colors[civ] = function() {
-        $.getJSON("http://manatee.local/choose_color/{{ player_no }}/" + civ + "/", function (data) { json_callback(data); });
+        $.getJSON("http://manatee.local/choose_color/{{ game_id }}/{{ player_no }}/" + civ + "/", function (data) { json_callback(data); });
         $(this).dialog("destroy");
       }
     });
@@ -310,7 +310,7 @@ function setmode(type) {
 
     $.each(fake, function(index, blank) {
       button_choices[index+''] = function() {
-        $.getJSON("http://manatee.local/attack_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $.getJSON("http://manatee.local/attack_commit/{{ game_id }}/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
         $(this).dialog("destroy");
       }});
 
@@ -334,7 +334,7 @@ function setmode(type) {
 
     $.each(fake, function(index, blank) {
       button_choices[index+''] = function() {
-        $.getJSON("http://manatee.local/defend_commit/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $.getJSON("http://manatee.local/defend_commit/{{ game_id }}/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
         $(this).dialog("destroy");
       }});
 
@@ -358,7 +358,7 @@ function setmode(type) {
 
     $.each(fake, function(index, blank) {
       button_choices[index+''] = function() {
-        $.getJSON("http://manatee.local/internal_defend/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
+        $.getJSON("http://manatee.local/internal_defend/{{ game_id }}/{{ player_no }}/" + index + "/", function (data) { json_callback(data); });
         $(this).dialog("destroy");
       }});
 
@@ -403,7 +403,7 @@ function check_selected_treasure() {
   if (total_treasure == $(".selected-treasure").length) {
     var button_choices = {};
     button_choices['yes'] = function() {
-      $.getJSON("http://manatee.local/choose_treasure/{{ player_no }}/" + jquery_to_list($(".selected-treasure")) + "/", function (data) { json_callback(data); });
+      $.getJSON("http://manatee.local/choose_treasure/{{ game_id }}/{{ player_no }}/" + jquery_to_list($(".selected-treasure")) + "/", function (data) { json_callback(data); });
       $(this).dialog("destroy");
     };
 
@@ -484,7 +484,7 @@ function set_draggables(enable)
 }
 
 function call_json() {
-  $.getJSON("http://manatee.local/game_state_json/{{ player_no }}/", function (data) { json_callback(data); });
+  $.getJSON("http://manatee.local/game_state_json/{{ game_id }}/{{ player_no }}/", function (data) { json_callback(data); });
 }
 
   $(document).ready(function(){
@@ -522,7 +522,7 @@ function call_json() {
              }
 
              if (index >= 0) {
-                $.getJSON("http://manatee.local/drop_civ/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+                $.getJSON("http://manatee.local/drop_civ/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
              else if (war_index >= 0) {
                 $("#external_confirm").dialog({
@@ -530,7 +530,7 @@ function call_json() {
                    buttons: {
                      "LET'S DO THIS": function() {
                         set_draggables(0);
-                        $.getJSON("http://manatee.local/external_war/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+                        $.getJSON("http://manatee.local/external_war/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
                         $(this).dialog("destroy");
                      },
                      "MAKE LOVE": function() {
@@ -550,7 +550,7 @@ function call_json() {
              $.each(state['war_ruler_moves'][piece], function(i, war_data) { if(cell_no == war_data[0]) { war_index = i; } });
 
              if (index >= 0) {
-                $.getJSON("http://manatee.local/drop_ruler/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+                $.getJSON("http://manatee.local/drop_ruler/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
              else if (war_index != -1) {
                 war_data = state['war_ruler_moves'][piece][war_index];
@@ -573,7 +573,7 @@ function call_json() {
 
     $.each(fake, function(index, blank) {
       button_choices[index+''] = function() {
-        $.getJSON("http://manatee.local/internal_attack/{{ player_no }}/" + cell_no + "/" + civ_type + "/" + index + "/", function (data) { json_callback(data); });
+        $.getJSON("http://manatee.local/internal_attack/{{ game_id }}/{{ player_no }}/" + cell_no + "/" + civ_type + "/" + index + "/", function (data) { json_callback(data); });
         $(this).dialog("destroy");
     }});
     button_choices['cancel'] = function() {
