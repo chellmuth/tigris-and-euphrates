@@ -239,6 +239,8 @@ def create_game(request):
 
     board = StandardBoard(game=game)
 
+    p1_hand.turn_no, p2_hand.turn_no = 1, 1
+
     p1.save()
     p2.save()
     game.save()
