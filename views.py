@@ -225,7 +225,7 @@ def create_game(request):
     p1 = Player.objects.create(user_name='cjh')
     p2 = Player.objects.create(user_name='test')
     
-    game = Game.objects.create(player_1=p1, player_2=p2)
+    game = Game.objects.create(player_1=p1, player_2=p2, name='Test Game!')
 
     bag = CivBag.objects.create(game=game)
     p1_hand = Hand.objects.create(game=game, player=p1, turn_no=game.turn_no, action_no=game.action_no,

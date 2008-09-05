@@ -1,6 +1,7 @@
 <table>
 <tr>
     <th>Game ID</th>
+    <th>Game Name</th>
     <th>Turn No</th>
     <th>Action No</th>
     <th>Player 1</th>
@@ -11,10 +12,11 @@
 {% for game in games %}
 <tr>
     <td>{{ game.id }}</td>
+    <td>{{ game.name }}</td>
     <td>{{ game.turn_no }}</td>
     <td>{{ game.action_no }}</td>
-    <td><a href="/game/{{ game.id }}/{{ game.player_1_id }}/">{{ game.player_1.user_name }}</a></td>
-    <td><a href="/game/{{ game.id }}/{{ game.player_2_id }}/">{{ game.player_2.user_name }}</a></td>
+    <td><a href="/game/{{ game.id }}/1/">{{ game.player_1.user_name }}</a></td>
+    <td><a href="/game/{{ game.id }}/2/">{{ game.player_2.user_name }}</a></td>
     <td>{{ game.current_turn }}</td>
     <td>{{ game.waiting_for }}</td>
 </tr>

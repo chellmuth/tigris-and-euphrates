@@ -32,9 +32,11 @@ class Game(models.Model):
     player_2_points_merchant = models.IntegerField(default=0)
     player_2_points_treasure = models.IntegerField(default=0)
 
-    waiting_for = models.IntegerField(default=0)
-    current_turn = models.IntegerField(default=0)
-    state = models.TextField(default='NORMAL')
+    waiting_for = models.IntegerField(default=1)
+    current_turn = models.IntegerField(default=1)
+    state = models.TextField(default='REGULAR')
+
+    name = models.TextField()
 
     def increment_action(self):
         self.action_no = (self.action_no + 1) % 2
