@@ -288,6 +288,7 @@ function json_callback(data) {
 function set_stats(stats) {
   $("#stats_turn_no").text(stats['turn_no']);
   $("#stats_action_no").text(stats['action_no']);
+  $("#stats_current_turn").text(stats['current_turn']);
   $("#stats_waiting_on").text(stats['waiting_on']);
 }
 
@@ -644,6 +645,7 @@ function call_json() {
 <div id="stats">
     Turn#: <span id="stats_turn_no">0</span><br />
     Action#: <span id="stats_action_no"></span><br />
+    Current Turn: <span id="stats_current_turn"></span><br />
     Waiting On: <span id="stats_waiting_on"></span>
 </div>
 </div>
