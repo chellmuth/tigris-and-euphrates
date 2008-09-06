@@ -1,11 +1,12 @@
 from django.shortcuts import render_to_response
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from game.models import Game, CivBag, Hand, Player
 from game.board import StandardBoard, build_board_data
 from game.board import split_legal_moves_by_type, safe_tile, safe_ruler, external_war_tile, internal_war_ruler
 from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, SettlementRuler, FarmRuler, TempleRuler, MerchantRuler
 from game.board.cell import Ground
+from tigris.forms import GameCreateForm
 
 def _convert(str):
     if str[0] == 's':
@@ -222,10 +223,23 @@ def external_war(request, game_id, player_no, civ, cell):
     return game_state_json(request, game_id,player_no)
 
 def create_game(request):
+    if request.method == 'POST':
+        form = GameCreateForm(request.POST)
+        if form.is_valid():
+            _setup_game(name=form.clean_data['name'])
+            return HttpResponseRedirect('/show_games/')
+    else:
+        form = GameCreateForm()
+
+    return render_to_response('create_game.html', {
+        'form': form,
+    })
+
+def _setup_game(name):
     p1 = Player.objects.create(user_name='cjh')
     p2 = Player.objects.create(user_name='test')
     
-    game = Game.objects.create(player_1=p1, player_2=p2, name='Test Game!')
+    game = Game.objects.create(player_1=p1, player_2=p2, name=name)
 
     bag = CivBag.objects.create(game=game)
     p1_hand = Hand.objects.create(game=game, player=p1, turn_no=game.turn_no, action_no=game.action_no,

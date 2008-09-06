@@ -1,24 +1,55 @@
-<table>
-<tr>
-    <th>Game ID</th>
-    <th>Game Name</th>
-    <th>Turn No</th>
-    <th>Action No</th>
-    <th>Player 1</th>
-    <th>Player 2</th>
-    <th>Current Turn</th>
-    <th>Waiting For</th>
-</tr>
-{% for game in games %}
-<tr>
-    <td>{{ game.id }}</td>
-    <td>{{ game.name }}</td>
-    <td>{{ game.turn_no }}</td>
-    <td>{{ game.action_no }}</td>
-    <td><a href="/game/{{ game.id }}/1/">{{ game.player_1.user_name }}</a></td>
-    <td><a href="/game/{{ game.id }}/2/">{{ game.player_2.user_name }}</a></td>
-    <td>{{ game.current_turn }}</td>
-    <td>{{ game.waiting_for }}</td>
-</tr>
-{% endfor %}
-</table>
+<html>
+<head>
+    <style>
+body {
+  background: #A8D46F;
+  color: #3C3251;
+}
+
+a {
+  color: #3C3251;
+}
+
+h1 {
+  color: #341139;
+}
+
+table {
+  background: #FFED90;
+  border-color: #3C3251;
+  border-width: 3px;
+  border-style: solid;
+  padding: 5px;
+}
+    </style>
+</head>
+<body>
+    <h1>Tigris and Euphrates</h1>
+    <table>
+        <tr>
+            <th>Game ID</th>
+            <th>Game Name</th>
+            <th>Turn No</th>
+            <th>Action No</th>
+            <th>Player 1</th>
+            <th>Player 2</th>
+            <th>Current Turn</th>
+            <th>Waiting For</th>
+        </tr>
+        {% for game in games %}
+        <tr>
+            <td>{{ game.id }}</td>
+            <td>{{ game.name }}</td>
+            <td>{{ game.turn_no }}</td>
+            <td>{{ game.action_no }}</td>
+            <td><a href="/game/{{ game.id }}/1/">{{ game.player_1.user_name }}</a></td>
+            <td><a href="/game/{{ game.id }}/2/">{{ game.player_2.user_name }}</a></td>
+            <td>{{ game.current_turn }}</td>
+            <td>{{ game.waiting_for }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+<br />
+<a href="/">Home.</a>
+</body>
+</html>
