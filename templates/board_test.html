@@ -197,7 +197,7 @@
   border: 2px solid #3C3251;
   background: #FFED90;
   top: 50px;
-  left:950px;
+  left:925px;
   padding: 5px;
 }
 
@@ -281,8 +281,12 @@ function json_callback(data) {
   $.each(data['points'], function(i, type) { update_points(i, type); });
   $.each(data['treasure-normal'], function(i, cell_no) { add_treasure_to_cell(cell_no, false); });
   $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
-
+  set_stats(data['stats']);
   setmode(data['state']);
+}
+
+function set_stats(stats) {
+  $("#stats_turn_no").text(stats['turn_no']);
 }
 
 function add_treasure_to_cell(cell_no, is_corner) {
