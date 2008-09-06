@@ -16,7 +16,7 @@ class Game(models.Model):
     num_players = models.IntegerField(default=2)
 
     turn_no = models.IntegerField(default=1)
-    action_no = models.IntegerField(default=1)
+    action_no = models.IntegerField(default=0)
     
     player_1_points_farm = models.IntegerField(default=0)
     player_1_points_settlement = models.IntegerField(default=0)
