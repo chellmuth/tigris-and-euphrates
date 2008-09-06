@@ -287,6 +287,7 @@ function json_callback(data) {
 
 function set_stats(stats) {
   $("#stats_turn_no").text(stats['turn_no']);
+  $("#stats_action_no").text(stats['action_no']);
 }
 
 function add_treasure_to_cell(cell_no, is_corner) {
@@ -640,7 +641,8 @@ function call_json() {
 <div id="points_treasure"></div>
 
 <div id="stats">
-    Turn#: <span id="stats_turn_no">0</span>
+    Turn#: <span id="stats_turn_no">0</span><br />
+    Action#: <span id="stats_action_no"></span>
 </div>
 </div>
 </body>
