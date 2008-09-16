@@ -30,6 +30,12 @@
    background-color: yellow;
 }
 
+#board {
+  position: absolute;
+  top: {{ board_start_y }}px;
+  left: {{ board_start_x }}px;
+}
+
 #hand0 {
   position: absolute;
   top: 600px;
@@ -504,7 +510,6 @@ function call_json() {
 
   $(document).ready(function(){
     call_json();
-
     $("#hand0").draggable({revert: true});
     $("#hand1").draggable({revert: true});
     $("#hand2").draggable({revert: true});
@@ -520,8 +525,8 @@ function call_json() {
     $("#board").droppable({
       accept: ".piece",
       drop: function(ev, ui) {
-          var row = ev.pageY / {{ size }} | 0;
-          var col = ev.pageX / {{ size }} | 0;
+          var row = (ev.pageY - {{ board_start_y }}) / {{ size }} | 0;
+          var col = (ev.pageX - {{ board_start_x }}) / {{ size }} | 0;
           var cell_no = row * {{ cols }} + col;
           
           var piece = ui.draggable.get(0).id;
@@ -628,12 +633,13 @@ function call_json() {
 {% for div in div_decls %}
    {{ div }}
 {% endfor %}
-</div>
 
 <div id="external_confirm" title="External War?">Are you sure you want to start an external war?</div>
 <div id="choose_battle" title="Choose Color!">Choose the color for the next battle</div>
 <div id="commit_choices" title="Choose Number of Tiles!">How many tiles to contribute?</div>
 <div id="confirm_treasure">Would you like to choose these treasures?</div>
+
+</div>
 
 <div id="points_temple"></div>
 <div id="points_settlement"></div>

@@ -333,6 +333,9 @@ def print_custom_css_board(request, game_id, player_no, rows, cols, size):
     div_decls = []
     js_script = []
     player_no = int(player_no)
+    board_start_x = 20
+    board_start_y = 40
+
     g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
 
