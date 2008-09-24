@@ -298,7 +298,7 @@ function set_stats(stats) {
   $("#stats_turn_no").text(stats['turn_no']);
   $("#stats_action_no").text(stats['action_no']);
   $("#stats_current_turn").text(stats['current_turn']);
-  $("#stats_waiting_on").text(stats['waiting_on']);
+  $("#waiting_for").text(stats['waiting_on']);
 }
 
 function add_treasure_to_cell(cell_no, is_corner) {
@@ -622,12 +622,12 @@ function call_json() {
 
 <body>
     <div class="status">
-        <div class="waiting_for" style="float:left; width:150px;">
+        <div style="float:left; width:150px;">
             <div>
                 Waiting For:
             </div>
-            <div style="text-align:center;">
-                PLAYER3
+            <div id="waiting_for" style="text-align:center;">
+                NONE
             </div>
         </div>
         <div style="margin-left:100px; float:left;" id="player_hand">
@@ -785,7 +785,6 @@ function call_json() {
     Turn#: <span id="stats_turn_no">0</span><br />
     Action#: <span id="stats_action_no"></span><br />
     Current Turn: <span id="stats_current_turn"></span><br />
-    Waiting On: <span id="stats_waiting_on"></span>
 </div>
 </div>
 </body>
