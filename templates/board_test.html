@@ -297,8 +297,15 @@ function json_callback(data) {
 function set_stats(stats) {
   $("#stats_turn_no").text(stats['turn_no']);
   $("#stats_action_no").text(stats['action_no']);
-  $("#stats_current_turn").text(stats['current_turn']);
   $("#waiting_for").text(stats['waiting_on']);
+
+  for(var i=0;i<=2;i++) {
+    if(stats['current_turn_no'] == i) {
+      $("#status_player_" + i).removeClass("not_current").addClass("current");
+    } else {
+      $("#status_player_" + i).removeClass("current").addClass("not_current");
+    }
+  }
 }
 
 function add_treasure_to_cell(cell_no, is_corner) {
@@ -646,7 +653,7 @@ function call_json() {
         </div>
 
     </div>
-    <div class="current">
+    <div id="status_player_1" class="player not_current">
         <div class="name">
             PLAYER1 NAME
         </div>
@@ -675,7 +682,7 @@ function call_json() {
             </div>
         </div>
     </div>
-    <div class="player">
+    <div id="status_player_2" class="player not_current">
         <div class="name">
             PLAYER2 NAME
         </div>
@@ -704,7 +711,7 @@ function call_json() {
             </div>
         </div>
     </div>
-    <div class="player">
+    <div id="status_player_3" class="player not_current">
         <div class="name">
             PLAYER3 NAME
         </div>
@@ -733,7 +740,7 @@ function call_json() {
             </div>
         </div>
     </div>
-    <div class="player">
+    <div id="status_player_4" class="player not_current">
         <div class="name">
             PLAYER4 NAME
         </div>
@@ -784,7 +791,6 @@ function call_json() {
 <div style="visibility:hidden" id="stats">
     Turn#: <span id="stats_turn_no">0</span><br />
     Action#: <span id="stats_action_no"></span><br />
-    Current Turn: <span id="stats_current_turn"></span><br />
 </div>
 </div>
 </body>

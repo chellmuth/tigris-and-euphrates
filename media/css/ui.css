@@ -15,12 +15,12 @@ h1 {
   margin-bottom: 3px;
 }
 
-.player, .status {
-  background: #FFED90;
-}
-
 .current {
   background: #FFC6E6;
+}
+
+.not_current {
+  background: #FFED90;
 }
 
 .player, .current {
@@ -31,6 +31,7 @@ h1 {
 .status {
   width: 960px;
   height: 50px;
+  background: #FFED90;
 }
 
 .player, .current, .status {
