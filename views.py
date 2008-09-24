@@ -27,7 +27,7 @@ def _convert_ruler(str, player_no):
         return FarmRuler(player_no)
     if str[0] == 't':
         return TempleRuler(player_no)
-    
+
 def choose_treasure(request, game_id, player_no, cell_nos):
     cell_nos = [ int(x) for x in cell_nos.split("_") ]
 
@@ -78,7 +78,7 @@ def internal_defend(request, game_id, player_no, num_committed):
 
     g.save()
     board.save()
-    
+
     return game_state_json(request, game_id, player_no)
 
 def internal_attack(request, game_id, player_no, cell_no, civ, num_committed):
@@ -88,7 +88,7 @@ def internal_attack(request, game_id, player_no, cell_no, civ, num_committed):
     board = StandardBoard(g,1)
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
-    
+
     if not internal_war_ruler(board, cell_no, 'ruler-' + civ, player_no): return False
     if not g.current_turn == int(player_no): return False
 
@@ -105,7 +105,7 @@ def internal_attack(request, game_id, player_no, cell_no, civ, num_committed):
     board.save()
 
     return game_state_json(request, game_id, player_no)
-    
+
 def defend_commit(request, game_id, player_no, tile_count):
     g = Game.objects.get(id=int(game_id))
     if not g.state.startswith('DEFEND'): return False
@@ -166,7 +166,7 @@ def attack_commit(request, game_id, player_no, tile_count):
     if not int(player_no) == g.waiting_for: return False
     if not hand.batch_remove(civ, tile_count): return False
     hand.save()
-    
+
     g.state = 'DEFEND|' + civ + "|" + tile_count
 
     g.waiting_for = _get_defender(g, board)
@@ -186,7 +186,7 @@ def choose_color(request, game_id, player_no, civ):
     g.waiting_for = _get_attacker(g, board)
 
     g.save()
-    
+
     return game_state_json(request, game_id, player_no)
 
 def external_war(request, game_id, player_no, civ, cell):
@@ -198,7 +198,7 @@ def external_war(request, game_id, player_no, civ, cell):
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
-    
+
     moves = []
     civ_obj = _convert(hand.__getattribute__('piece' + str(civ)))
 
@@ -238,7 +238,7 @@ def create_game(request):
 def _setup_game(name):
     p1 = Player.objects.create(user_name='cjh')
     p2 = Player.objects.create(user_name='test')
-    
+
     game = Game.objects.create(player_1=p1, player_2=p2, name=name)
 
     bag = CivBag.objects.create(game=game)
@@ -274,7 +274,7 @@ def drop_ruler(request, game_id, player_no, ruler, cell):
     p = g.__getattribute__('player_' + player_no)
 
     moves = [ cell_no for cell_no, _ in enumerate(board) if safe_ruler(board, cell_no, 'ruler-' + ruler, player_no) ]
-    
+
     if cell in moves and int(player_no) == g.current_turn:
         board.add_ruler(cell, ruler, player_no)
     else: return False
@@ -295,7 +295,7 @@ def drop_civ(request, game_id, player_no, civ, cell):
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
-    
+
     moves = []
     civ_obj = _convert(hand.__getattribute__('piece' + str(civ)))
 
@@ -309,7 +309,7 @@ def drop_civ(request, game_id, player_no, civ, cell):
         if point_to:
             attr_name = 'player_' + point_to + '_points_' + civ_obj.css_class_name()
             g.__setattr__(attr_name, g.__getattribute__(attr_name) + 1)
-            
+
         board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         build_board_data(board)
         hand.swap(civ)
@@ -354,7 +354,7 @@ left: %spx;
         css_classes.append(css_string)
 
         cell_class = board[cell_no].is_ground and 'cell-ground' or 'cell-river'
-            
+
         div_decls.append('<div id="drop%s" class="%s"></div>' % (cell_no, cell_class))
 
     board_css = """#board {
@@ -394,7 +394,7 @@ def game_state_json(request, game_id, player_no):
 
     p = g.__getattribute__('player_' + player_no)
     hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
-    
+
     ground_moves = [ cell_no for cell_no, cell in enumerate(board) if safe_tile(board, cell_no, is_ground=True) ]
     war_ground_moves = [ cell_no for cell_no, cell in enumerate(board) if external_war_tile(board, cell_no, is_ground=True) ]
 
@@ -417,7 +417,7 @@ def game_state_json(request, game_id, player_no):
 
     tiles = [ hand.piece0, hand.piece1, hand.piece2, hand.piece3, hand.piece4, hand.piece5 ]
 
-    player_no_prefix = "player_" + player_no + "_points_" 
+    player_no_prefix = "player_" + player_no + "_points_"
     points = {}
     for civ in [ 'temple', 'settlement', 'farm', 'merchant', 'treasure' ]:
         points[civ] = g.__getattribute__(player_no_prefix + civ)
@@ -440,7 +440,7 @@ def game_state_json(request, game_id, player_no):
    "legal_ground_moves": %s,
    "war_ground_moves": %s,
    "legal_river_moves": %s,
-   "legal_ruler_moves": 
+   "legal_ruler_moves":
        { "temple": %s,
          "settlement": %s,
          "farm": %s,
@@ -452,7 +452,7 @@ def game_state_json(request, game_id, player_no):
          "farm": %s,
          "merchant": %s
        },
-   "war_ruler_moves": 
+   "war_ruler_moves":
        { "temple": %s,
          "settlement": %s,
          "farm": %s,
@@ -464,18 +464,18 @@ def game_state_json(request, game_id, player_no):
          "farm": %s,
          "merchant": %s
        },
-   "temple_count": %s, 
+   "temple_count": %s,
    "player_hand": %s,
    "unification": %s,
    "temple_civ": %s,
    "settlement_civ": %s,
-   "farm_civ": %s, 
+   "farm_civ": %s,
    "merchant_civ": %s,
    "treasure-normal": %s,
    "treasure-corner": %s,
    "temple_ruler": %s,
    "settlement_ruler": %s,
-   "farm_ruler": %s, 
+   "farm_ruler": %s,
    "merchant_ruler": %s,
    "points":
        { "temple": %s,
@@ -563,7 +563,7 @@ def _get_attack_info(game, board):
 
     kingdom = _get_attacker_kingdom(game, board)
     if not kingdom: return attack_info
-    
+
     attack_info['attack_board'] = board.pieces_by_region[kingdom][game.state.split("|")[1]]
 
     hand = Hand.objects.filter(player=game.__getattribute__('player_' + str(player)), turn_no=1, game=game).get()
@@ -573,7 +573,7 @@ def _get_attack_info(game, board):
     kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
     defense_kingdom = kingdom == kingdom1 and kingdom2 or kingdom1
     attack_info['defend_board'] =  board.pieces_by_region[defense_kingdom][game.state.split("|")[1]]
-    
+
     return attack_info
 
 # XXX A
@@ -597,26 +597,26 @@ def _get_defend_info(game, board):
     attack_info['attack_board'] =  board.pieces_by_region[defense_kingdom][game.state.split("|")[1]]
 
     attack_info['attack_committed'] = game.state.split("|")[2]
-    
+
     return attack_info
 
 # XXX A THIS WHOLE SECTION SUCKS
 def _get_kingdom_for_player_in_war(game, board, player):
     unification_no = board.find_unification_tile()
-    if not unification_no: return [] 
+    if not unification_no: return []
     # XXX duplicated code
     kingdom1, kingdom2 = board.data[unification_no]['adjacent_kingdoms']
 
     kingdom_info1 = board.pieces_by_region[kingdom1]
     kingdom_info2 = board.pieces_by_region[kingdom2]
-    
+
     kingdom = None
     for type, player_no, cell_no in kingdom_info1['rulers']:
         if int(player_no) == int(player) and type == ('ruler-' + game.state.split("|")[1]):
             kingdom = kingdom1
 
     if not kingdom: kingdom = kingdom2
-    
+
     return kingdom
 
 def _get_attacker_kingdom(game, board):
