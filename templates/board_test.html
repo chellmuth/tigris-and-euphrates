@@ -304,15 +304,15 @@ function set_rulers(player_no, ruler_group) {
       $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass("ruler-" + ruler + "-" + player_no);
 
       if(use_sidebar) {
-        $("#sidebar-" + player_no + "-" + ruler).hide();
+        $("#sidebar-" + player_no + "-" + ruler).css('visibility', 'hidden');
       } else {
-        $("#" + "ruler-" + ruler).hide();
+        $("#" + "ruler-" + ruler).css('visibility', 'hidden');
       }
     } else {
       if(use_sidebar) {
-        $("#sidebar-" + player_no + "-" + ruler).show();
+        $("#sidebar-" + player_no + "-" + ruler).css('visibility', 'visible');
       } else {
-        $("#" + "ruler-" + ruler).show();
+        $("#" + "ruler-" + ruler).css('visibility', 'visible');
       }
     }
   }
@@ -494,7 +494,7 @@ function place_civ_on_board(civ_type, cell_no) {
 }
 
 function set_civilization_tiles(index, civ_type) {
-  $("#hand" + index).show();
+  $("#hand" + index).css('visibility', 'visible');
 
   color = 'error';
   type = 'ground';
@@ -508,7 +508,7 @@ function set_civilization_tiles(index, civ_type) {
   } else if (civ_type[0] == 's') {
     color = 'civ-settlement';
   } else {
-    $("#hand" + index).hide();
+    $("#hand" + index).css('visibility', 'hidden');
     color = 'civ-empty';
   }
 
