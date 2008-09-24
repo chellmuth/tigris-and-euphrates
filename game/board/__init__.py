@@ -181,12 +181,11 @@ class StandardBoard:
                 cell_nos.append(cell_no)
         return cell_nos
 
-    def get_cell_and_player_nos_for_ruler(self, color):
-        cell_nos = []
+    def get_cell_no_for_player_no_and_ruler(self, player_no, color):
         for cell_no, cell in enumerate(self.cells):
-            if cell.piece and (cell.piece.db_form()[-1] == color) and (cell.piece.db_form()[0] == 'r'):
-                cell_nos.append([cell_no, int(cell.piece.player_no)])
-        return cell_nos
+            if cell.piece and (cell.piece.db_form()[-1] == color) and (cell.piece.db_form()[0] == 'r') and (int(cell.piece.player_no) == player_no):
+                return cell_no
+        return -1
 
     def place_unification(self, cell_no, civ):
         self.cells[cell_no].special = Unification()

@@ -282,16 +282,40 @@ function json_callback(data) {
   $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });
   $.each(data['farm_civ'], function(i, cell_no) { place_civ_on_board('civ-farm', cell_no); });
   $.each(data['merchant_civ'], function(i, cell_and_player_no) { place_civ_on_board('civ-merchant', cell_and_player_no); });
-  $.each(data['temple_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-temple', cell_and_player_no); });
-  $.each(data['settlement_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-settlement', cell_and_player_no); });
-  $.each(data['farm_ruler'], function(i, cell_and_player_no) { place_ruler_on_board('ruler-farm', cell_and_player_no); });
-  $.each(data['merchant_ruler'], function(i, cell_no) { place_ruler_on_board('ruler-merchant', cell_no); });
   $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
   $.each(data['points'], function(i, type) { update_points(i, type); });
   $.each(data['treasure-normal'], function(i, cell_no) { add_treasure_to_cell(cell_no, false); });
   $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
   set_stats(data['stats']);
+  set_rulers(1, data['rulers']['1']);
+  set_rulers(2, data['rulers']['2']);
   setmode(data['state']);
+}
+
+function set_rulers(player_no, ruler_group) {
+  var use_sidebar = player_no != {{ player_no }};
+
+  var rulers = [ 'temple', 'settlement', 'farm', 'merchant' ];
+  for (var index in rulers) {
+    var ruler = rulers[index];
+    var cell_no = ruler_group[ruler];
+
+    if(cell_no != -1) {
+      $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass("ruler-" + ruler + "-" + player_no);
+
+      if(use_sidebar) {
+        $("#sidebar-" + player_no + "-" + ruler).hide();
+      } else {
+        $("#" + "ruler-" + ruler).hide();
+      }
+    } else {
+      if(use_sidebar) {
+        $("#sidebar-" + player_no + "-" + ruler).show();
+      } else {
+        $("#" + "ruler-" + ruler).show();
+      }
+    }
+  }
 }
 
 function set_stats(stats) {
@@ -467,13 +491,6 @@ function update_points(type, amount) {
 
 function place_civ_on_board(civ_type, cell_no) {
   $("#drop" + cell_no).removeClass('unification').removeClass('treasure').removeClass('treasure-corner').removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').removeClass('selected-treasure').addClass(civ_type);
-}
-
-function place_ruler_on_board(ruler_type, cell_info) {
-  $("#drop" + cell_info[0]).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass(ruler_type + "-" + cell_info[1]);
-  if (cell_info[1] == {{ player_no }}) {
-    $("#" + ruler_type).hide();
-  }
 }
 
 function set_civilization_tiles(index, civ_type) {
@@ -659,12 +676,12 @@ function call_json() {
         </div>
         <div class="rulers" style="float:left;">
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/1-Temple.png">
-                <img width="40" height="40" src="/media/pieces/rulers/1-Settlement.png">
+                <img id="sidebar-1-temple" width="40" height="40" src="/media/pieces/rulers/1-Temple.png">
+                <img id="sidebar-1-settlement" width="40" height="40" src="/media/pieces/rulers/1-Settlement.png">
             </div>
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/1-Merchant.png">
-                <img width="40" height="40" src="/media/pieces/rulers/1-Farm.png">
+                <img id="sidebar-1-merchant" width="40" height="40" src="/media/pieces/rulers/1-Merchant.png">
+                <img id="sidebar-1-farm" width="40" height="40" src="/media/pieces/rulers/1-Farm.png">
             </div>
         </div>
         <div class="civs" style="float:left;">
@@ -688,12 +705,12 @@ function call_json() {
         </div>
         <div class="rulers" style="float:left;">
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/2-Temple.png">
-                <img width="40" height="40" src="/media/pieces/rulers/2-Settlement.png">
+                <img id="sidebar-2-temple" width="40" height="40" src="/media/pieces/rulers/2-Temple.png">
+                <img id="sidebar-2-settlement" width="40" height="40" src="/media/pieces/rulers/2-Settlement.png">
             </div>
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/2-Merchant.png">
-                <img width="40" height="40" src="/media/pieces/rulers/2-Farm.png">
+                <img id="sidebar-2-merchant" width="40" height="40" src="/media/pieces/rulers/2-Merchant.png">
+                <img id="sidebar-2-farm" width="40" height="40" src="/media/pieces/rulers/2-Farm.png">
             </div>
         </div>
         <div class="civs" style="float:left;">

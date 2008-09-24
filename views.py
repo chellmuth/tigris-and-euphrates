@@ -368,6 +368,9 @@ left: %spx;
 
     ruler_prefix = player_no == 1 and 'A' or 'B'
 
+    player_no_list = range(1, g.num_players)
+    civ_list = [ 'Temple', 'Settlement', 'Farm', 'Merchant' ]
+
     return render_to_response('board_test.html', locals())
 
 def _get_reposition_info(board, player_no, ruler_type):
@@ -473,10 +476,6 @@ def game_state_json(request, game_id, player_no):
    "merchant_civ": %s,
    "treasure-normal": %s,
    "treasure-corner": %s,
-   "temple_ruler": %s,
-   "settlement_ruler": %s,
-   "farm_ruler": %s,
-   "merchant_ruler": %s,
    "points":
        { "temple": %s,
          "settlement": %s,
@@ -513,10 +512,83 @@ def game_state_json(request, game_id, player_no):
           "current_turn_no": %s,
           "waiting_on": %s
        },
+   "rulers":
+       {  "1":
+              {  "temple": %s,
+                 "settlement": %s,
+                 "farm": %s,
+                 "merchant": %s
+              },
+          "2":
+              {  "temple": %s,
+                 "settlement": %s,
+                 "farm": %s,
+                 "merchant": %s
+              }
+       },
    "state": "%s"
 }
-""" % (ground_moves, war_ground_moves, river_moves, safe_temples, safe_settlements, safe_farms, safe_merchants, safe_reposition_temples, safe_reposition_settlements, safe_reposition_farms, safe_reposition_merchants, war_temples, war_settlements, war_farms, war_merchants, war_reposition_temples, war_reposition_settlements, war_reposition_farms, war_reposition_merchants, hand.count('t'), tiles, board.get_cell_no_for_unification(), board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T') + board.get_cell_no_for_civ('T*'), board.get_cell_no_for_civ('s'), board.get_cell_no_for_civ('f'), board.get_cell_no_for_civ('m'), board.get_cell_no_for_civ('T'), board.get_cell_no_for_civ('T*'), board.get_cell_and_player_nos_for_ruler('t'), board.get_cell_and_player_nos_for_ruler('s'), board.get_cell_and_player_nos_for_ruler('f'), board.get_cell_and_player_nos_for_ruler('m'), points['temple'], points['settlement'], points['farm'], points['merchant'], points['treasure'], _find_war_choices(board), attack_info['tiles_available'], attack_info['attack_board'], attack_info['defend_board'], defend_info['tiles_available'], defend_info['defend_board'], defend_info['attack_committed'], defend_info['attack_board'], defend_internal_info['tiles_available'], defend_internal_info['defend_board'], defend_internal_info['attack_committed'], defend_internal_info['attack_board'], treasure_info['must_choose'], treasure_info['can_choose'], treasure_info['num_choose'], g.turn_no, g.action_no, g.current_turn, '"' + g.__getattribute__('player_'+str(g.waiting_for)).user_name + '"', state)
-    
+""" % (ground_moves,
+       war_ground_moves,
+       river_moves,
+       safe_temples,
+       safe_settlements,
+       safe_farms,
+       safe_merchants,
+       safe_reposition_temples,
+       safe_reposition_settlements,
+       safe_reposition_farms,
+       safe_reposition_merchants,
+       war_temples,
+       war_settlements,
+       war_farms,
+       war_merchants,
+       war_reposition_temples,
+       war_reposition_settlements,
+       war_reposition_farms,
+       war_reposition_merchants,
+       hand.count('t'),
+       tiles,
+       board.get_cell_no_for_unification(),
+       board.get_cell_no_for_civ('t') + board.get_cell_no_for_civ('T') + board.get_cell_no_for_civ('T*'),
+       board.get_cell_no_for_civ('s'),
+       board.get_cell_no_for_civ('f'),
+       board.get_cell_no_for_civ('m'),
+       board.get_cell_no_for_civ('T'),
+       board.get_cell_no_for_civ('T*'),
+       points['temple'],
+       points['settlement'],
+       points['farm'],
+       points['merchant'],
+       points['treasure'],
+       _find_war_choices(board),
+       attack_info['tiles_available'],
+       attack_info['attack_board'],
+       attack_info['defend_board'],
+       defend_info['tiles_available'],
+       defend_info['defend_board'],
+       defend_info['attack_committed'],
+       defend_info['attack_board'],
+       defend_internal_info['tiles_available'],
+       defend_internal_info['defend_board'],
+       defend_internal_info['attack_committed'],
+       defend_internal_info['attack_board'],
+       treasure_info['must_choose'],
+       treasure_info['can_choose'],
+       treasure_info['num_choose'],
+       g.turn_no,
+       g.action_no,
+       g.current_turn,
+       '"' + g.__getattribute__('player_'+str(g.waiting_for)).user_name + '"',
+       board.get_cell_no_for_player_no_and_ruler(1, 't'),
+       board.get_cell_no_for_player_no_and_ruler(1, 's'),
+       board.get_cell_no_for_player_no_and_ruler(1, 'f'),
+       board.get_cell_no_for_player_no_and_ruler(1, 'm'),
+       board.get_cell_no_for_player_no_and_ruler(2, 't'),
+       board.get_cell_no_for_player_no_and_ruler(2, 's'),
+       board.get_cell_no_for_player_no_and_ruler(2, 'f'),
+       board.get_cell_no_for_player_no_and_ruler(2, 'm'),
+       state)
 #    print str
 
     resp = HttpResponse(json_str)
