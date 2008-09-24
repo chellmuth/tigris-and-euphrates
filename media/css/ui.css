@@ -1,0 +1,54 @@
+body {
+  background: #A8D46F;
+  color: #3C3251;
+}
+
+a {
+  color: #3C3251;
+}
+
+h1 {
+  color: #341139;
+}
+
+.name {
+  margin-bottom: 3px;
+}
+
+.player, .status {
+  background: #FFED90;
+}
+
+.current {
+  background: #FFC6E6;
+}
+
+.player, .current {
+  height: 110px;
+  width: 150px;
+}
+
+.status {
+  width: 960px;
+  height: 50px;
+}
+
+.player, .current, .status {
+  border-color: #3C3251;
+  border-width: 3px;
+  border-style: solid;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+
+.civs {
+  margin-left: 8px;
+}
+
+#player_info {
+  background: #FFED90;
+  border-color: #3C3251;
+  border-style: solid;
+  padding: 5px;
+  width: 365px;
+}

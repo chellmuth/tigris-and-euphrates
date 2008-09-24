@@ -1,6 +1,9 @@
 <html>
 <head>
+
 <link rel="stylesheet" type="text/css" href="/media/css/flora.dialog.css" />
+<link rel="stylesheet" type="text/css" href="/media/css/ui.css" />
+
 <script type="text/javascript" src="/media/js/jquery-1.2.6.js"></script>
 <script type="text/javascript" src="/media/js/ui.core.js"></script>
 <script type="text/javascript" src="/media/js/ui.dialog.js"></script>
@@ -8,6 +11,30 @@
 <script type="text/javascript" src="/media/js/ui.droppable.js"></script>
 
 <style>
+#player_1_farm {
+  width: 50px;
+  height: 50px;
+  background-image: url(/media/pieces/rulers/1-Farm.png);
+}
+
+#player_1_merchant {
+  width: 50px;
+  height: 50px;
+  background-image: url(/media/pieces/rulers/1-Merchant.png);
+}
+
+#player_1_settlement {
+  width: 50px;
+  height: 50px;
+  background-image: url(/media/pieces/rulers/1-Settlement.png);
+}
+
+#player_1_temple {
+  width: 50px;
+  height: 50px;
+  background-image: url(/media/pieces/rulers/1-Temple.png);
+}
+
 {% for css in css_classes %}
    {{ css }}
 {% endfor %}
@@ -15,11 +42,11 @@
 {{ board_css }}
 
 .cell-ground {
-  border: 1px solid white;
-  background-color: #887733;
+  border: 2px solid #3C3251;
+  background-color: #A38322;
 }
 .cell-river {
-  border: 1px solid white;
+  border: 2px solid #3C3251;
   background-color: #7777FF;
 }
 
@@ -37,84 +64,64 @@
 }
 
 #hand0 {
-  position: absolute;
-  top: 600px;
-  left: 200px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
 }
 
 #hand1 {
-  position: absolute;
-  top: 600px;
-  left: 250px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
 }
 
 #hand2 {
-  position: absolute;
-  top: 600px;
-  left: 300px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
 }
 
 #hand3 {
-  position: absolute;
-  top: 600px;
-  left: 350px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
 }
 
 #hand4 {
-  position: absolute;
-  top: 600px;
-  left: 400px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
 }
 
 #hand5 {
-  position: absolute;
-  top: 600px;
-  left: 450px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
 }
 
 #ruler-settlement {
-  position: absolute;
-  top: 650px;
-  left: 250px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
   background-image: url(/media/pieces/rulers/{{ player_no }}-Settlement.png);
 }
 
 #ruler-temple {
-  position: absolute;
-  top: 650px;
-  left: 300px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
   background-image: url(/media/pieces/rulers/{{ player_no }}-Temple.png);
 }
 
 #ruler-merchant {
-  position: absolute;
-  top: 650px;
-  left: 350px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
   background-image: url(/media/pieces/rulers/{{ player_no }}-Merchant.png);
 }
 
 #ruler-farm {
-  position: absolute;
-  top: 650px;
-  left: 400px;
+  margin-left: 1px;
   height: 50px;
   width: 50px;
   background-image: url(/media/pieces/rulers/{{ player_no }}-Farm.png);
@@ -212,7 +219,7 @@
   height: 30px;
   width: 30px;
   top: 50px;
-  left: 850px;  
+  left: 850px;
   position: absolute;
   color: white;
 }
@@ -223,7 +230,7 @@
   height: 30px;
   width: 30px;
   top: 80px;
-  left: 850px;  
+  left: 850px;
   position: absolute;
   color: white;
 }
@@ -234,7 +241,7 @@
   height: 30px;
   width: 30px;
   top: 110px;
-  left: 850px;  
+  left: 850px;
   position: absolute;
   color: white;
 }
@@ -245,7 +252,7 @@
   height: 30px;
   width: 30px;
   top: 140px;
-  left: 850px;  
+  left: 850px;
   position: absolute;
   color: white;
 }
@@ -256,13 +263,10 @@
   height: 30px;
   width: 30px;
   top: 170px;
-  left: 850px;  
+  left: 850px;
   position: absolute;
 }
-
-
 </style>
-
 
 </head>
 
@@ -528,7 +532,7 @@ function call_json() {
           var row = (ev.pageY - {{ board_start_y }}) / {{ size }} | 0;
           var col = (ev.pageX - {{ board_start_x }}) / {{ size }} | 0;
           var cell_no = row * {{ cols }} + col;
-          
+
           var piece = ui.draggable.get(0).id;
           var index = -1;
           var war_index = -1;
@@ -581,7 +585,7 @@ function call_json() {
     });
 
   });
-  
+
   function confirm_internal_battle(cell_no, civ_type, attack_board, tiles_available, defend_board) {
     button_choices = {};
 
@@ -617,17 +621,147 @@ function call_json() {
 </script>
 
 <body>
+    <div class="status">
+        <div class="waiting_for" style="float:left; width:150px;">
+            <div>
+                Waiting For:
+            </div>
+            <div style="text-align:center;">
+                PLAYER3
+            </div>
+        </div>
+        <div style="margin-left:100px; float:left;" id="player_hand">
+            <div id="hand0" style="float:left;" class="piece civ-settlement"></div>
+            <div id="hand1" style="float:left;" class="piece civ-temple"></div>
+            <div id="hand2" style="float:left;" class="piece civ-farm"></div>
+            <div id="hand3" style="float:left;" class="piece civ-merchant"></div>
+            <div id="hand4" style="float:left;" class="piece"></div>
+            <div id="hand5" style="float:left;" class="piece"></div>
+        </div>
+        <div style="margin-left:50px; float:left;" id="player_rulers">
+            <div style="float:left;" id="ruler-settlement" class="ruler-settlement-{{ player_no }} piece"></div>
+            <div style="float:left;" id="ruler-farm" class="ruler-farm-{{ player_no }} piece"></div>
+            <div style="float:left;" id="ruler-merchant" class="ruler-merchant-{{ player_no }} piece"></div>
+            <div style="float:left;" id="ruler-temple" class="ruler-temple-{{ player_no }} piece"></div>
+        </div>
 
-<div id="hand0" class="piece civ-settlement">A</div>
-<div id="hand1" class="piece civ-temple">B</div>
-<div id="hand2" class="piece civ-farm">C</div>
-<div id="hand3" class="piece civ-merchant">D</div>
-<div id="hand4" class="piece">E</div>
-<div id="hand5" class="piece">F</div>
-<div id="ruler-settlement" class="ruler-settlement-{{ player_no }} piece"></div>
-<div id="ruler-farm" class="ruler-farm-{{ player_no }} piece"></div>
-<div id="ruler-merchant" class="ruler-merchant-{{ player_no }} piece"></div>
-<div id="ruler-temple" class="ruler-temple-{{ player_no }} piece"></div>
+    </div>
+    <div class="current">
+        <div class="name">
+            PLAYER1 NAME
+        </div>
+        <div class="rulers" style="float:left;">
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/1-Temple.png">
+                <img width="40" height="40" src="/media/pieces/rulers/1-Settlement.png">
+            </div>
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/1-Merchant.png">
+                <img width="40" height="40" src="/media/pieces/rulers/1-Farm.png">
+            </div>
+        </div>
+        <div class="civs" style="float:left;">
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+        </div>
+    </div>
+    <div class="player">
+        <div class="name">
+            PLAYER2 NAME
+        </div>
+        <div class="rulers" style="float:left;">
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/2-Temple.png">
+                <img width="40" height="40" src="/media/pieces/rulers/2-Settlement.png">
+            </div>
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/2-Merchant.png">
+                <img width="40" height="40" src="/media/pieces/rulers/2-Farm.png">
+            </div>
+        </div>
+        <div class="civs" style="float:left;">
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+        </div>
+    </div>
+    <div class="player">
+        <div class="name">
+            PLAYER3 NAME
+        </div>
+        <div class="rulers" style="float:left;">
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/1-Temple.png">
+                <img width="40" height="40" src="/media/pieces/rulers/1-Settlement.png">
+            </div>
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/1-Merchant.png">
+                <img width="40" height="40" src="/media/pieces/rulers/1-Farm.png">
+            </div>
+        </div>
+        <div class="civs" style="float:left;">
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+        </div>
+    </div>
+    <div class="player">
+        <div class="name">
+            PLAYER4 NAME
+        </div>
+        <div class="rulers" style="float:left;">
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/2-Temple.png">
+                <img width="40" height="40" src="/media/pieces/rulers/2-Settlement.png">
+            </div>
+            <div>
+                <img width="40" height="40" src="/media/pieces/rulers/2-Merchant.png">
+                <img width="40" height="40" src="/media/pieces/rulers/2-Farm.png">
+            </div>
+        </div>
+        <div class="civs" style="float:left;">
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+            <div>
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img width="25" height="25" src="/media/pieces/civ/back.png">
+            </div>
+        </div>
+    </div>
 
 <div id="board">
 {% for div in div_decls %}
@@ -641,13 +775,13 @@ function call_json() {
 
 </div>
 
-<div id="points_temple"></div>
-<div id="points_settlement"></div>
-<div id="points_farm"></div>
-<div id="points_merchant"></div>
-<div id="points_treasure"></div>
+<div style="visibility:hidden;" id="points_temple"></div>
+<div style="visibility:hidden;" id="points_settlement"></div>
+<div style="visibility:hidden;" id="points_farm"></div>
+<div style="visibility:hidden;" id="points_merchant"></div>
+<div style="visibility:hidden;" id="points_treasure"></div>
 
-<div id="stats">
+<div style="visibility:hidden" id="stats">
     Turn#: <span id="stats_turn_no">0</span><br />
     Action#: <span id="stats_action_no"></span><br />
     Current Turn: <span id="stats_current_turn"></span><br />
