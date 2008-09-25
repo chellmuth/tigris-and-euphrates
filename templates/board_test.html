@@ -180,67 +180,36 @@
   border: 2px solid black;
 }
 
-#stats {
-  position:absolute;
-  border: 2px solid #3C3251;
-  background: #FFED90;
-  top: 50px;
-  left:925px;
-  padding: 5px;
-}
-
 #points_temple {
-  border: 1px solid purple;
   background-color: red;
-  height: 30px;
-  width: 30px;
-  top: 50px;
-  left: 850px;
-  position: absolute;
   color: white;
 }
 
 #points_settlement {
-  border: 1px solid purple;
   background-color: black;
-  height: 30px;
-  width: 30px;
-  top: 80px;
-  left: 850px;
-  position: absolute;
   color: white;
 }
 
 #points_merchant {
-  border: 1px solid purple;
   background-color: green;
-  height: 30px;
-  width: 30px;
-  top: 110px;
-  left: 850px;
-  position: absolute;
   color: white;
 }
 
 #points_farm {
-  border: 1px solid purple;
   background-color: blue;
-  height: 30px;
-  width: 30px;
-  top: 140px;
-  left: 850px;
-  position: absolute;
   color: white;
 }
 
 #points_treasure {
-  border: 1px solid purple;
   background-color: white;
+  color: black;
+}
+
+.points {
+  text-align: center;
   height: 30px;
   width: 30px;
-  top: 170px;
-  left: 850px;
-  position: absolute;
+  margin-left: 1px;
 }
 </style>
 
@@ -641,7 +610,7 @@ function call_json() {
                 NONE
             </div>
         </div>
-        <div style="margin-left:100px; float:left;" id="player_hand">
+        <div style="margin-left:50px; float:left;" id="player_hand">
             <div id="hand0" style="float:left;" class="piece civ-settlement"></div>
             <div id="hand1" style="float:left;" class="piece civ-temple"></div>
             <div id="hand2" style="float:left;" class="piece civ-farm"></div>
@@ -649,13 +618,19 @@ function call_json() {
             <div id="hand4" style="float:left;" class="piece"></div>
             <div id="hand5" style="float:left;" class="piece"></div>
         </div>
-        <div style="margin-left:50px; float:left;" id="player_rulers">
+        <div style="margin-left:20px; float:left;" id="player_rulers">
             <div style="float:left;" id="ruler-settlement" class="ruler-settlement-{{ player_no }} piece"></div>
             <div style="float:left;" id="ruler-farm" class="ruler-farm-{{ player_no }} piece"></div>
             <div style="float:left;" id="ruler-merchant" class="ruler-merchant-{{ player_no }} piece"></div>
             <div style="float:left;" id="ruler-temple" class="ruler-temple-{{ player_no }} piece"></div>
         </div>
-
+        <div id="points" style="float:right;">
+            <div style="float:left;" class="points" id="points_temple">0</div>
+            <div style="float:left;" class="points" id="points_settlement">0</div>
+            <div style="float:left;" class="points" id="points_farm">0</div>
+            <div style="float:left;" class="points" id="points_merchant">0</div>
+            <div style="float:left;" class="points" id="points_treasure">0</div>
+        </div>
     </div>
     <div id="status_player_1" class="player not_current">
         <div class="name">
@@ -786,11 +761,6 @@ function call_json() {
 
 </div>
 
-<div style="visibility:hidden;" id="points_temple"></div>
-<div style="visibility:hidden;" id="points_settlement"></div>
-<div style="visibility:hidden;" id="points_farm"></div>
-<div style="visibility:hidden;" id="points_merchant"></div>
-<div style="visibility:hidden;" id="points_treasure"></div>
 
 <div style="visibility:hidden" id="stats">
     Turn#: <span id="stats_turn_no">0</span><br />
