@@ -38,8 +38,7 @@ def choose_treasure(request, game_id, player_no, cell_nos):
     for cell_no in cell_nos:
         board[cell_no].piece.treasure = None
 
-    attr_name = 'player_' + player_no + '_points_treasure'
-    g.__setattr__(attr_name, g.__getattribute__(attr_name) + len(cell_nos))
+    _give_points(game=g, player_no=player_no, count=len(cell_nos), type='treasure')
 
     g.state = 'REGULAR'
     g.increment_action()
@@ -136,11 +135,13 @@ def defend_commit(request, game_id, player_no, tile_count):
     losing_kindom = None
     if len(defend_info['attack_board']) + int(defend_info['attack_committed']) > len(defend_info['defend_board']) + int(tile_count):
         losing_kingdom = _get_defender_kingdom(g, board)
-
+        winner_no = _get_attacker(g, board)
     else:
         losing_kingdom = _get_attacker_kingdom(g, board)
+        winner_no = player_no
 
-    board.external_war_removal(losing_kingdom, civ)
+    points = board.external_war_removal(losing_kingdom, civ)
+    _give_points(game=g, player_no=winner_no, count=points, type=civ)
 
     build_board_data(board)
 
@@ -316,8 +317,7 @@ def drop_civ(request, game_id, player_no, civ, cell):
     if cell in moves and int(player_no) == g.current_turn:
         point_to = board.get_point(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         if point_to:
-            attr_name = 'player_' + point_to + '_points_' + civ_obj.css_class_name()
-            g.__setattr__(attr_name, g.__getattribute__(attr_name) + 1)
+            _give_points(game=g, player_no=point_to, count=1, type=civ_obj.css_class_name())
 
         board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         build_board_data(board)
