@@ -66,11 +66,15 @@ def internal_defend(request, game_id, player_no, num_committed):
     defend_amount = num_committed + defend_info['defend_board']
     attack_amount = defend_info['attack_board'] + int(defend_info['attack_committed'])
 
+    winner = None
     if defend_amount < attack_amount:
         board[defend_info['defend_cell_no']] = Ground()
         board[defend_info['attack_cell_no']].piece = _convert_ruler(defend_info['ruler_type'], defend_info['attack_player'])
+        winner = defend_info['attack_player']
     else:
-        pass
+        winner = player_no
+
+    _give_points(game=g, player_no=winner, count=1, type='temple')
 
     g.state = 'REGULAR'
 
@@ -80,6 +84,11 @@ def internal_defend(request, game_id, player_no, num_committed):
     board.save()
 
     return game_state_json(request, game_id, player_no)
+
+def _give_points(game, player_no, count, type):
+    attr_name = 'player_' + str(player_no) + '_points_' + type
+    game.__setattr__(attr_name, game.__getattribute__(attr_name) + count)
+
 
 def internal_attack(request, game_id, player_no, cell_no, civ, num_committed):
     cell_no = int(cell_no)
