@@ -312,7 +312,12 @@ def drop_civ(request, game_id, player_no, civ, cell):
 
         board.add_civ(cell, _convert(hand.__getattribute__('piece' + str(civ))))
         build_board_data(board)
-        hand.swap(civ)
+
+        if g.action_no == 1:
+            hand.swap(civ)
+        else:
+            hand.remove(civ)
+
         hand.save()
     else: return False
 
