@@ -262,10 +262,21 @@ function json_callback(data) {
   $.each(data['points'], function(i, type) { update_points(i, type); });
   $.each(data['treasure-normal'], function(i, cell_no) { add_treasure_to_cell(cell_no, false); });
   $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
+  $.each(data['hand_counts'], function(player_no, count) { set_hand_count(player_no, count); });
   set_stats(data['stats']);
   set_rulers(1, data['rulers']['1']);
   set_rulers(2, data['rulers']['2']);
   setmode(data['state']);
+}
+
+function set_hand_count(player_no, count) {
+  if (player_no == {{ player_no }}) {
+    return;
+  }
+
+  for(var i=1; i<=6-count; i++) {
+    $("#sidebar-" + player_no + "-" + i + "-back").css("visibility", "hidden");
+  }
 }
 
 function set_rulers(player_no, ruler_group) {
@@ -662,16 +673,16 @@ function call_json() {
         </div>
         <div class="civs" style="float:left;">
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-1-1-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-1-2-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-1-3-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-1-4-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-1-5-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-1-6-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
         </div>
     </div>
@@ -691,16 +702,16 @@ function call_json() {
         </div>
         <div class="civs" style="float:left;">
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-2-1-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-2-2-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-2-3-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-2-4-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-2-5-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-2-6-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
         </div>
     </div>
@@ -720,16 +731,16 @@ function call_json() {
         </div>
         <div class="civs" style="float:left;">
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-3-1-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-3-2-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-3-3-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-3-4-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-3-5-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-3-6-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
         </div>
     </div>
@@ -749,16 +760,16 @@ function call_json() {
         </div>
         <div class="civs" style="float:left;">
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-4-1-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-4-2-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-4-3-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-4-4-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
             <div>
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
-                <img width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-4-5-back" width="25" height="25" src="/media/pieces/civ/back.png">
+                <img id="sidebar-4-6-back" width="25" height="25" src="/media/pieces/civ/back.png">
             </div>
         </div>
     </div>

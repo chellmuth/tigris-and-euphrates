@@ -92,6 +92,9 @@ class Hand(models.Model):
             if count == 0: return True
         return False
                 
+    def total_pieces(self):
+        return len([ x for x in xrange(6) if not self.is_empty(x) ])
+
     def is_empty(self, piece_no):
         return self.__getattribute__('piece' + str(piece_no)) == 'XXX'
 

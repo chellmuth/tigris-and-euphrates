@@ -526,6 +526,10 @@ def game_state_json(request, game_id, player_no):
                  "merchant": %s
               }
        },
+   "hand_counts":
+       {  "1": %s,
+          "2": %s,
+       },
    "state": "%s"
 }
 """ % (ground_moves,
@@ -588,6 +592,8 @@ def game_state_json(request, game_id, player_no):
        board.get_cell_no_for_player_no_and_ruler(2, 's'),
        board.get_cell_no_for_player_no_and_ruler(2, 'f'),
        board.get_cell_no_for_player_no_and_ruler(2, 'm'),
+       Hand.objects.filter(player=g.__getattribute__('player_1'), turn_no=1, game=g).get().total_pieces(),
+       Hand.objects.filter(player=g.__getattribute__('player_2'), turn_no=1, game=g).get().total_pieces(),
        state)
 #    print str
 
