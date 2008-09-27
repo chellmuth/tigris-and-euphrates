@@ -151,11 +151,17 @@ def defend_commit(request, game_id, player_no, tile_count):
         g.state = 'CHOOSE_COLOR'
         g.waiting_for = g.current_turn
     else:
-        g.state = "REGULAR"
         board[unification_cell_no].piece = _convert(board[unification_cell_no].special.piece)
         board[unification_cell_no].special = None
+        build_board_data(board)
 
-    g.increment_action()
+	treasure = board.treasure_to_claim()
+	if treasure:
+	    g.waiting_for = treasure['player_no']
+	    g.state = 'TREASURE'
+	else:
+            g.state = "REGULAR"
+            g.increment_action()
 
     g.save()
     board.save()
