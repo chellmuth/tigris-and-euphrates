@@ -229,6 +229,7 @@ function json_callback(data) {
   $.each(data['merchant_civ'], function(i, cell_and_player_no) { place_civ_on_board('civ-merchant', cell_and_player_no); });
   $.each(data['unification'], function(i, cell_no) { place_civ_on_board('unification', cell_no); });
   $.each(data['points'], function(i, type) { update_points(i, type); });
+  $('.treasure-normal, .treasure-corner').removeClass('treasure-normal').removeClass('treasure-corner');
   $.each(data['treasure-normal'], function(i, cell_no) { add_treasure_to_cell(cell_no, false); });
   $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
   $.each(data['hand_counts'], function(player_no, count) { set_hand_count(player_no, count); });
