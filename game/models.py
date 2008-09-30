@@ -17,20 +17,34 @@ class Game(models.Model):
 
     turn_no = models.IntegerField(default=1)
     action_no = models.IntegerField(default=0)
-    
+
     player_1_points_farm = models.IntegerField(default=0)
     player_1_points_settlement = models.IntegerField(default=0)
-    player_1_points_temple = models.IntegerField(default=0)    
+    player_1_points_temple = models.IntegerField(default=0)
     player_1_points_farm = models.IntegerField(default=0)
     player_1_points_merchant = models.IntegerField(default=0)
     player_1_points_treasure = models.IntegerField(default=0)
 
     player_2_points_farm = models.IntegerField(default=0)
     player_2_points_settlement = models.IntegerField(default=0)
-    player_2_points_temple = models.IntegerField(default=0)    
+    player_2_points_temple = models.IntegerField(default=0)
     player_2_points_farm = models.IntegerField(default=0)
     player_2_points_merchant = models.IntegerField(default=0)
     player_2_points_treasure = models.IntegerField(default=0)
+
+    player_3_points_farm = models.IntegerField(default=0)
+    player_3_points_settlement = models.IntegerField(default=0)
+    player_3_points_temple = models.IntegerField(default=0)
+    player_3_points_farm = models.IntegerField(default=0)
+    player_3_points_merchant = models.IntegerField(default=0)
+    player_3_points_treasure = models.IntegerField(default=0)
+
+    player_4_points_farm = models.IntegerField(default=0)
+    player_4_points_settlement = models.IntegerField(default=0)
+    player_4_points_temple = models.IntegerField(default=0)
+    player_4_points_farm = models.IntegerField(default=0)
+    player_4_points_merchant = models.IntegerField(default=0)
+    player_4_points_treasure = models.IntegerField(default=0)
 
     waiting_for = models.IntegerField(default=1)
     current_turn = models.IntegerField(default=1)
@@ -76,7 +90,7 @@ class Hand(models.Model):
 
     def pieces(self):
         return [ self.__getattribute__('piece' + str(x)) for x in range(6) ]
-    
+
     def count(self, civ):
         civ = str(civ)
         return sum([ 1 for piece in self.pieces() if piece[0] == civ[0] ])
@@ -91,7 +105,7 @@ class Hand(models.Model):
                 count -= 1
             if count == 0: return True
         return False
-                
+
     def total_pieces(self):
         return len([ x for x in xrange(6) if not self.is_empty(x) ])
 
@@ -129,7 +143,7 @@ class CivBag(models.Model):
 
     def get_piece(self):
         ran = random.randint(0, sum([self.settlement_remaining, self.farm_remaining, self.merchant_remaining, self.temple_remaining]) - 1)
-        
+
         civ_sum = 0
         if 0 <= ran < civ_sum + self.settlement_remaining:
             self.settlement_remaining -= 1

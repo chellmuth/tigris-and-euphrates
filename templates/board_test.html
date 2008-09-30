@@ -176,6 +176,22 @@
   background-image: url(/media/pieces/rulers/2-Temple.png);
 }
 
+.ruler-settlement-3 {
+  background-image: url(/media/pieces/rulers/3-Settlement.png);
+}
+
+.ruler-farm-3 {
+  background-image: url(/media/pieces/rulers/3-Farm.png);
+}
+
+.ruler-merchant-3 {
+  background-image: url(/media/pieces/rulers/3-Merchant.png);
+}
+
+.ruler-temple-3 {
+  background-image: url(/media/pieces/rulers/3-Temple.png);
+}
+
 .selected-treasure {
   border: 2px solid black;
 }
@@ -234,8 +250,9 @@ function json_callback(data) {
   $.each(data['treasure-corner'], function(i, cell_no) { add_treasure_to_cell(cell_no, true); });
   $.each(data['hand_counts'], function(player_no, count) { set_hand_count(player_no, count); });
   set_stats(data['stats']);
-  set_rulers(1, data['rulers']['1']);
-  set_rulers(2, data['rulers']['2']);
+  for(var i=1;i<={{ num_players }};i++) {
+    set_rulers(i, data['rulers'][i]);
+  }
   setmode(data['state']);
 }
 
@@ -280,7 +297,7 @@ function set_stats(stats) {
   $("#stats_action_no").text(stats['action_no']);
   $("#waiting_for").text(stats['waiting_on']);
 
-  for(var i=0;i<=2;i++) {
+  for(var i=0;i<={{ num_players }};i++) {
     if(stats['current_turn_no'] == i) {
       $("#status_player_" + i).removeClass("not_current").addClass("current");
     } else {
@@ -495,6 +512,10 @@ function call_json() {
 
   $(document).ready(function(){
     call_json();
+
+    for(var i={{ num_players }} + 1; i<= 4; i++) {
+      $("#status_player_" + i).hide();
+    }
     $("#hand0").draggable({revert: true});
     $("#hand1").draggable({revert: true});
     $("#hand2").draggable({revert: true});
@@ -635,7 +656,7 @@ function call_json() {
     </div>
     <div id="status_player_1" class="player not_current">
         <div class="name">
-            PLAYER1 NAME
+            {{ player_name_1 }}
         </div>
         <div class="rulers" style="float:left;">
             <div>
@@ -664,7 +685,7 @@ function call_json() {
     </div>
     <div id="status_player_2" class="player not_current">
         <div class="name">
-            PLAYER2 NAME
+            {{ player_name_2 }}
         </div>
         <div class="rulers" style="float:left;">
             <div>
@@ -693,16 +714,16 @@ function call_json() {
     </div>
     <div id="status_player_3" class="player not_current">
         <div class="name">
-            PLAYER3 NAME
+            {{ player_name_3 }}
         </div>
         <div class="rulers" style="float:left;">
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/1-Temple.png">
-                <img width="40" height="40" src="/media/pieces/rulers/1-Settlement.png">
+                <img width="40" height="40" src="/media/pieces/rulers/3-Temple.png">
+                <img width="40" height="40" src="/media/pieces/rulers/3-Settlement.png">
             </div>
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/1-Merchant.png">
-                <img width="40" height="40" src="/media/pieces/rulers/1-Farm.png">
+                <img width="40" height="40" src="/media/pieces/rulers/3-Merchant.png">
+                <img width="40" height="40" src="/media/pieces/rulers/3-Farm.png">
             </div>
         </div>
         <div class="civs" style="float:left;">
@@ -722,7 +743,7 @@ function call_json() {
     </div>
     <div id="status_player_4" class="player not_current">
         <div class="name">
-            PLAYER4 NAME
+            {{ player_name_4 }}
         </div>
         <div class="rulers" style="float:left;">
             <div>

@@ -384,7 +384,20 @@ left: %spx;
 
     ruler_prefix = player_no == 1 and 'A' or 'B'
 
-    player_no_list = range(1, g.num_players)
+    num_players = g.num_players
+
+    player_names = []
+    for num in xrange(1, 5):
+        if num <= num_players:
+            player_names.append(g.__getattribute__('player_' + str(num)).user_name)
+        else:
+            player_names.append('')
+
+    player_name_1 = player_names[0]
+    player_name_2 = player_names[1]
+    player_name_3 = player_names[2]
+    player_name_4 = player_names[3]
+
     civ_list = [ 'Temple', 'Settlement', 'Farm', 'Merchant' ]
 
     return render_to_response('board_test.html', locals())
@@ -525,27 +538,14 @@ def game_state_json(request, game_id, player_no):
        {  "turn_no": g.turn_no,
           "action_no": g.action_no,
           "current_turn_no": g.current_turn,
-          "waiting_on": g.__getattribute__('player_'+str(g.waiting_for)).user_name
+          "waiting_on": g.__getattribute__('player_' + str(g.waiting_for)).user_name
        },
-   "rulers":
-       {  "1":
-              {  "temple": board.get_cell_no_for_player_no_and_ruler(1, 't'),
-                 "settlement": board.get_cell_no_for_player_no_and_ruler(1, 's'),
-                 "farm": board.get_cell_no_for_player_no_and_ruler(1, 'f'),
-                 "merchant": board.get_cell_no_for_player_no_and_ruler(1, 'm')
-              },
-          "2":
-              {  "temple": board.get_cell_no_for_player_no_and_ruler(2, 't'),
-                 "settlement": board.get_cell_no_for_player_no_and_ruler(2, 's'),
-                 "farm": board.get_cell_no_for_player_no_and_ruler(2, 'f'),
-                 "merchant": board.get_cell_no_for_player_no_and_ruler(2, 'm')
-              }
-       },
-   "hand_counts":
-       {  "1": Hand.objects.filter(player=g.__getattribute__('player_1'), turn_no=1, game=g).get().total_pieces(),
-          "2": Hand.objects.filter(player=g.__getattribute__('player_2'), turn_no=1, game=g).get().total_pieces()
-       },
-   "num_players": g.num_players,
+   "rulers": dict([ (player_no, dict([ (ruler_type, board.get_cell_no_for_player_no_and_ruler(player_no, ruler_type[0]))
+                                       for ruler_type in [ 'temple', 'settlement', 'farm', 'merchant' ]]))
+                     for player_no in xrange(1, g.num_players + 1) ]),
+
+   "hand_counts": dict([ (player_no, Hand.objects.filter(player=g.__getattribute__('player_' + str(player_no)), turn_no=1, game=g).get().total_pieces())
+                          for player_no in xrange(1, g.num_players + 1) ]),
    "state": state
    }
 
