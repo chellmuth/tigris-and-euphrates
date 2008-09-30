@@ -33,6 +33,8 @@ table {
             <th>Action No</th>
             <th>Player 1</th>
             <th>Player 2</th>
+            <th>Player 3</th>
+            <th>Player 4</th>
             <th>Current Turn</th>
             <th>Waiting For</th>
         </tr>
@@ -44,6 +46,8 @@ table {
             <td>{{ game.action_no }}</td>
             <td><a href="/game/{{ game.id }}/1/">{{ game.player_1.user_name }}</a></td>
             <td><a href="/game/{{ game.id }}/2/">{{ game.player_2.user_name }}</a></td>
+            <td><a href="/game/{{ game.id }}/3/">{{ game.player_3.user_name }}</a></td>
+            <td><a href="/game/{{ game.id }}/4/">{{ game.player_4.user_name }}</a></td>
             <td>{{ game.current_turn }}</td>
             <td>{{ game.waiting_for }}</td>
         </tr>

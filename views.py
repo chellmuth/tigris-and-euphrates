@@ -242,7 +242,8 @@ def create_game(request):
     if request.method == 'POST':
         form = GameCreateForm(request.POST)
         if form.is_valid():
-            _setup_game(name=form.clean_data['name'])
+            players = [ form.clean_data['p' + str(i + 1)] for i in xrange(4) ]
+            _setup_game(form.clean_data['name'], players, num_players=int(form.clean_data['num_players']))
             return HttpResponseRedirect('/show_games/')
     else:
         form = GameCreateForm()
@@ -251,32 +252,26 @@ def create_game(request):
         'form': form,
     })
 
-def _setup_game(name):
-    p1 = Player.objects.create(user_name='cjh')
-    p2 = Player.objects.create(user_name='test')
-
-    game = Game.objects.create(player_1=p1, player_2=p2, name=name)
+def _setup_game(name, players, num_players):
+    player_objs = dict([ ('player_' + str(player_no + 1), Player.objects.create(user_name=players[player_no])) for player_no in xrange(num_players) ])
+    game = Game.objects.create(num_players=num_players, name=name, **player_objs)
 
     bag = CivBag.objects.create(game=game)
-    p1_hand = Hand.objects.create(game=game, player=p1, turn_no=game.turn_no, action_no=game.action_no,
-                                  piece0=bag.get_piece().unique_id(), piece1=bag.get_piece().unique_id(),
-                                  piece2=bag.get_piece().unique_id(), piece3=bag.get_piece().unique_id(),
-                                  piece4=bag.get_piece().unique_id(), piece5=bag.get_piece().unique_id())
-    p2_hand = Hand.objects.create(game=game, player=p2, turn_no=game.turn_no, action_no=game.action_no,
-                                  piece0=bag.get_piece().unique_id(), piece1=bag.get_piece().unique_id(),
-                                  piece2=bag.get_piece().unique_id(), piece3=bag.get_piece().unique_id(),
-                                  piece4=bag.get_piece().unique_id(), piece5=bag.get_piece().unique_id())
+
+    for _, player in player_objs.iteritems():
+        hand = Hand.objects.create(game=game, player=player, turn_no=1, action_no=game.action_no,
+                                   piece0=bag.get_piece().unique_id(), piece1=bag.get_piece().unique_id(),
+                                   piece2=bag.get_piece().unique_id(), piece3=bag.get_piece().unique_id(),
+                                   piece4=bag.get_piece().unique_id(), piece5=bag.get_piece().unique_id())
+        hand.save()
 
     board = StandardBoard(game=game)
 
-    p1_hand.turn_no, p2_hand.turn_no = 1, 1
+    for _, player in player_objs.iteritems():
+        player.save()
 
-    p1.save()
-    p2.save()
     game.save()
     bag.save()
-    p1_hand.save()
-    p2_hand.save()
     board.save()
 
     return HttpResponse()
