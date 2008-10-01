@@ -277,6 +277,24 @@ def _setup_game(name, players, num_players):
 
     return HttpResponse()
 
+def reposition_ruler(request, game_id, player_no, ruler, cell):
+    cell = int(cell)
+
+    g = Game.objects.get(id=int(game_id))
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+
+    safe_repositions, _ = _get_reposition_info(board, player_no, ruler)
+    if cell in safe_repositions and int(player_no) == g.current_turn:
+        board.remove_ruler(board.get_cell_no_for_player_no_and_ruler(player_no, ruler[0]))
+    else: return False
+
+    g.save()
+    board.save()
+
+    return drop_ruler(request, game_id, player_no, ruler, cell)
+
 def drop_ruler(request, game_id, player_no, ruler, cell):
     cell = int(cell)
 
@@ -285,9 +303,7 @@ def drop_ruler(request, game_id, player_no, ruler, cell):
     build_board_data(board)
     p = g.__getattribute__('player_' + player_no)
 
-    moves = [ cell_no for cell_no, _ in enumerate(board) if safe_ruler(board, cell_no, 'ruler-' + ruler, player_no) ]
-
-    if cell in moves and int(player_no) == g.current_turn:
+    if safe_ruler(board, cell, 'ruler-' + ruler, player_no) and int(player_no) == g.current_turn:
         board.add_ruler(cell, ruler, player_no)
     else: return False
 

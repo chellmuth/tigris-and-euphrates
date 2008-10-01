@@ -182,6 +182,7 @@ class StandardBoard:
         return cell_nos
 
     def get_cell_no_for_player_no_and_ruler(self, player_no, color):
+        player_no = int(player_no)
         for cell_no, cell in enumerate(self.cells):
             if cell.piece and (cell.piece.db_form()[-1] == color) and (cell.piece.db_form()[0] == 'r') and (int(cell.piece.player_no) == player_no):
                 return cell_no
@@ -227,6 +228,9 @@ class StandardBoard:
     def add_ruler(self, cell_no, ruler, player_no):
         piece = _convert_ruler(ruler, player_no)
         self.cells[cell_no].piece = piece
+
+    def remove_ruler(self, cell_no):
+        self[cell_no].piece = None
 
     def add_civ(self, cell_no, civ):
         self.cells[cell_no].piece = civ

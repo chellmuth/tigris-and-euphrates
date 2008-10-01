@@ -277,7 +277,7 @@ function set_rulers(player_no, ruler_group) {
     var ruler_key = "ruler-" + ruler + "-" + player_no;
     if(cell_no != -1) {
 
-      $("#" + ruler_key).show().appendTo("#drop" + cell_no);
+      $("#" + ruler_key).show().appendTo("#drop" + cell_no).addClass("placed");
 
       if(use_sidebar) {
         $("#sidebar-" + player_no + "-" + ruler).css('visibility', 'hidden');
@@ -285,9 +285,9 @@ function set_rulers(player_no, ruler_group) {
     } else {
       if(use_sidebar) {
         $("#sidebar-" + player_no + "-" + ruler).css('visibility', 'visible');
-        $("#" + ruler_key).hide().appendTo("#ruler-bin");
+        $("#" + ruler_key).hide().appendTo("#ruler-bin").removeClass("placed");
       } else {
-        $("#" + ruler_key).show().appendTo("#" + ruler_key +"-bin");
+        $("#" + ruler_key).show().appendTo("#" + ruler_key +"-bin").removeClass("placed");
       }
     }
   }
@@ -572,17 +572,26 @@ function call_json() {
           }
           else {
              war_index = -1;
-             piece = piece.substring(6, piece.lastIndexOf('-'));
+             if ($("#" + piece).hasClass("placed")) {
+               piece = piece.substring(6, piece.lastIndexOf('-'));
 
-             index = state['legal_ruler_moves'][piece].indexOf(cell_no);
-             $.each(state['war_ruler_moves'][piece], function(i, war_data) { if(cell_no == war_data[0]) { war_index = i; } });
-
-             if (index >= 0) {
-                $.getJSON("/drop_ruler/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+               index = state['legal_ruler_repositions'][piece].indexOf(cell_no);
+               $.getJSON("/reposition_ruler/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/",
+                          function (data) { json_callback(data); });
              }
-             else if (war_index != -1) {
-                war_data = state['war_ruler_moves'][piece][war_index];
-                confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2]);
+             else {
+               piece = piece.substring(6, piece.lastIndexOf('-'));
+
+               index = state['legal_ruler_moves'][piece].indexOf(cell_no);
+               $.each(state['war_ruler_moves'][piece], function(i, war_data) { if(cell_no == war_data[0]) { war_index = i; } });
+
+               if (index >= 0) {
+                  $.getJSON("/drop_ruler/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
+               }
+               else if (war_index != -1) {
+                  war_data = state['war_ruler_moves'][piece][war_index];
+                  confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2]);
+               }
              }
           }
       }
