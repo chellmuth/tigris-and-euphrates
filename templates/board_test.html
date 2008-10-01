@@ -274,19 +274,20 @@ function set_rulers(player_no, ruler_group) {
     var ruler = rulers[index];
     var cell_no = ruler_group[ruler];
 
+    var ruler_key = "ruler-" + ruler + "-" + player_no;
     if(cell_no != -1) {
-      $("#drop" + cell_no).removeClass('civ-temple').removeClass('civ-settlement').removeClass('civ-farm').removeClass('civ-merchant').addClass("ruler-" + ruler + "-" + player_no);
+
+      $("#" + ruler_key).show().appendTo("#drop" + cell_no);
 
       if(use_sidebar) {
         $("#sidebar-" + player_no + "-" + ruler).css('visibility', 'hidden');
-      } else {
-        $("#" + "ruler-" + ruler).css('visibility', 'hidden');
       }
     } else {
       if(use_sidebar) {
         $("#sidebar-" + player_no + "-" + ruler).css('visibility', 'visible');
+        $("#" + ruler_key).hide().appendTo("#ruler-bin");
       } else {
-        $("#" + "ruler-" + ruler).css('visibility', 'visible');
+        $("#" + ruler_key).show().appendTo("#" + ruler_key +"-bin");
       }
     }
   }
@@ -500,10 +501,10 @@ function set_draggables(enable)
   $("#hand4").draggable(str);
   $("#hand5").draggable(str);
 
-  $("#ruler-settlement").draggable(str);
-  $("#ruler-farm").draggable(str);
-  $("#ruler-merchant").draggable(str);
-  $("#ruler-temple").draggable(str);
+  $("#ruler-settlement-{{ player_no }}").draggable(str);
+  $("#ruler-farm-{{ player_no }}").draggable(str);
+  $("#ruler-merchant-{{ player_no }}").draggable(str);
+  $("#ruler-temple-{{ player_no }}").draggable(str);
 }
 
 function call_json() {
@@ -523,10 +524,10 @@ function call_json() {
     $("#hand4").draggable({revert: true});
     $("#hand5").draggable({revert: true});
 
-    $("#ruler-settlement").draggable({revert: true});
-    $("#ruler-farm").draggable({revert: true});
-    $("#ruler-merchant").draggable({revert: true});
-    $("#ruler-temple").draggable({revert: true});
+    $("#ruler-settlement-{{ player_no }}").draggable({revert: true});
+    $("#ruler-farm-{{ player_no }}").draggable({revert: true});
+    $("#ruler-merchant-{{ player_no }}").draggable({revert: true});
+    $("#ruler-temple-{{ player_no }}").draggable({revert: true});
 
     $("#board").droppable({
       accept: ".piece",
@@ -571,7 +572,8 @@ function call_json() {
           }
           else {
              war_index = -1;
-             piece = piece.substring(6);
+             piece = piece.substring(6, piece.lastIndexOf('-'));
+
              index = state['legal_ruler_moves'][piece].indexOf(cell_no);
              $.each(state['war_ruler_moves'][piece], function(i, war_data) { if(cell_no == war_data[0]) { war_index = i; } });
 
@@ -641,10 +643,10 @@ function call_json() {
             <div id="hand5" style="float:left;" class="piece"></div>
         </div>
         <div style="margin-left:20px; float:left;" id="player_rulers">
-            <div style="float:left;" id="ruler-settlement" class="ruler-settlement-{{ player_no }} piece"></div>
-            <div style="float:left;" id="ruler-farm" class="ruler-farm-{{ player_no }} piece"></div>
-            <div style="float:left;" id="ruler-merchant" class="ruler-merchant-{{ player_no }} piece"></div>
-            <div style="float:left;" id="ruler-temple" class="ruler-temple-{{ player_no }} piece"></div>
+            <div style="float:left;" id="ruler-settlement-{{ player_no }}-bin"></div>
+            <div style="float:left;" id="ruler-farm-{{ player_no }}-bin"></div>
+            <div style="float:left;" id="ruler-merchant-{{ player_no }}-bin"></div>
+            <div style="float:left;" id="ruler-temple-{{ player_no }}-bin"></div>
         </div>
         <div id="points" style="float:right;">
             <div style="float:left;" class="points" id="points_temple">0</div>
@@ -783,11 +785,24 @@ function call_json() {
 
 </div>
 
+<div id="ruler-bin">
+<div style="display:none;" id="ruler-settlement-1" class="piece ruler-settlement-1"></div>
+<div style="display:none;" id="ruler-merchant-1" class="piece ruler-merchant-1"></div>
+<div style="display:none;" id="ruler-temple-1" class="piece ruler-temple-1"></div>
+<div style="display:none;" id="ruler-farm-1" class="piece ruler-farm-1"></div>
+<div style="display:none;" id="ruler-settlement-2" class="piece ruler-settlement-2"></div>
+<div style="display:none;" id="ruler-merchant-2" class="piece ruler-merchant-2"></div>
+<div style="display:none;" id="ruler-temple-2" class="piece ruler-temple-2"></div>
+<div style="display:none;" id="ruler-farm-2" class="piece ruler-farm-2"></div>
+<div style="display:none;" id="ruler-settlement-3" class="piece ruler-settlement-3"></div>
+<div style="display:none;" id="ruler-merchant-3" class="piece ruler-merchant-3"></div>
+<div style="display:none;" id="ruler-temple-3" class="piece ruler-temple-3"></div>
+<div style="display:none;" id="ruler-farm-3" class="piece ruler-farm-3"></div>
+<div style="display:none;" id="ruler-settlement-4" class="piece ruler-settlement-4"></div>
+<div style="display:none;" id="ruler-merchant-4" class="piece ruler-merchant-4"></div>
+<div style="display:none;" id="ruler-temple-4" class="piece ruler-temple-4"></div>
+<div style="display:none;" id="ruler-farm-4" class="piece ruler-farm-4"></div>
+</div>
 
-<div style="visibility:hidden" id="stats">
-    Turn#: <span id="stats_turn_no">0</span><br />
-    Action#: <span id="stats_action_no"></span><br />
-</div>
-</div>
 </body>
 </html>
