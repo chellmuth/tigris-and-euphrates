@@ -277,6 +277,22 @@ def _setup_game(name, players, num_players):
 
     return HttpResponse()
 
+def remove_ruler(request, game_id, player_no, ruler):
+    g = Game.objects.get(id=int(game_id))
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+
+    if board.is_ruler_placed('ruler-' + ruler, player_no) and int(player_no) == g.current_turn:
+        board.remove_ruler(board.get_cell_no_for_player_no_and_ruler(player_no, ruler[0]))
+        g.increment_action()
+    else: return False
+
+    g.save()
+    board.save()
+
+    return game_state_json(request, game_id, player_no)
+
 def reposition_ruler_war(request, game_id, player_no, cell_no, ruler, num_committed):
     cell_no = int(cell_no)
 

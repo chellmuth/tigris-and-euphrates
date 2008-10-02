@@ -529,6 +529,16 @@ function call_json() {
     $("#ruler-merchant-{{ player_no }}").draggable({revert: true});
     $("#ruler-temple-{{ player_no }}").draggable({revert: true});
 
+    $(".status").droppable({
+      accept: ".placed",
+      drop: function(ev, ui) {
+          var piece = ui.draggable.get(0).id;
+          piece = piece.substring(6, piece.lastIndexOf('-'));
+          $.getJSON("/remove_ruler/{{ game_id }}/{{ player_no }}/" + piece + "/",
+                    function (data) { json_callback(data); });
+      }
+    });
+
     $("#board").droppable({
       accept: ".piece",
       drop: function(ev, ui) {
