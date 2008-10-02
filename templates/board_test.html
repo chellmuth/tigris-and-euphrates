@@ -576,8 +576,18 @@ function call_json() {
                piece = piece.substring(6, piece.lastIndexOf('-'));
 
                index = state['legal_ruler_repositions'][piece].indexOf(cell_no);
-               $.getJSON("/reposition_ruler/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/",
-                          function (data) { json_callback(data); });
+               if (index >= 0) {
+                 $.getJSON("/reposition_ruler/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/",
+                           function (data) { json_callback(data); });
+                 return;
+               }
+
+               $.each(state['war_ruler_repositions'][piece], function(i, war_data) { if(cell_no == war_data[0]) { index = i; } });
+               if (index >= 0) {
+                 war_data = state['war_ruler_repositions'][piece][index];
+                 confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2], true);
+                 return;
+               }
              }
              else {
                piece = piece.substring(6, piece.lastIndexOf('-'));
@@ -590,7 +600,7 @@ function call_json() {
                }
                else if (war_index != -1) {
                   war_data = state['war_ruler_moves'][piece][war_index];
-                  confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2]);
+                  confirm_internal_battle(cell_no, piece, war_data[1], state['temple_count'], war_data[2], false);
                }
              }
           }
@@ -599,7 +609,8 @@ function call_json() {
 
   });
 
-  function confirm_internal_battle(cell_no, civ_type, attack_board, tiles_available, defend_board) {
+  function confirm_internal_battle(cell_no, civ_type, attack_board, tiles_available, defend_board, is_reposition) {
+    var url = is_reposition ? 'reposition_ruler_war' : 'internal_attack';
     button_choices = {};
 
     // had some problems with closures using for-loop variables
@@ -610,7 +621,7 @@ function call_json() {
 
     $.each(fake, function(index, blank) {
       button_choices[index+''] = function() {
-        $.getJSON("/internal_attack/{{ game_id }}/{{ player_no }}/" + cell_no + "/" + civ_type + "/" + index + "/", function (data) { json_callback(data); });
+        $.getJSON("/" + url + "/{{ game_id }}/{{ player_no }}/" + cell_no + "/" + civ_type + "/" + index + "/", function (data) { json_callback(data); });
         $(this).dialog("destroy");
     }});
     button_choices['cancel'] = function() {

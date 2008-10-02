@@ -76,7 +76,7 @@ class StandardBoard:
                 if '!' in cell_str:
                     return River(special=Catastrophe())
                 elif '?' in cell_str:
-                    return River(piece=FarmCiv(), special=Unification()) 
+                    return River(piece=FarmCiv(), special=Unification())
                 else:
                     return River()
             elif cell_str.startswith('s'):
@@ -431,10 +431,10 @@ def ruler_intersect(board, kingdoms_list):
 
 def safe_tile(board, cell_no, is_ground=True):
     return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground == is_ground and (len(board.data[cell_no]['adjacent_kingdoms']) <= 1 or
-                                                                                      (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and 
+                                                                                      (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and
                                                                                        not ruler_intersect(board, board.data[cell_no]['adjacent_kingdoms'])))
 def external_war_tile(board, cell_no, is_ground=True):
-    return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground == is_ground and (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and 
+    return board.data[cell_no]['kingdom'] is 0 and board[cell_no].is_ground == is_ground and (len(board.data[cell_no]['adjacent_kingdoms']) is 2 and
                                                                                       ruler_intersect(board, board.data[cell_no]['adjacent_kingdoms']))
 
 def safe_ruler(board, cell_no, ruler_type, player_no):

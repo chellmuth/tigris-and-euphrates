@@ -277,6 +277,24 @@ def _setup_game(name, players, num_players):
 
     return HttpResponse()
 
+def reposition_ruler_war(request, game_id, player_no, cell_no, ruler, num_committed):
+    cell_no = int(cell_no)
+
+    g = Game.objects.get(id=int(game_id))
+    board = StandardBoard(g,1)
+    build_board_data(board)
+    p = g.__getattribute__('player_' + player_no)
+
+    _, war_repositions = _get_reposition_info(board, player_no, ruler)
+    if cell_no in [ x for x,_,_ in war_repositions ] and int(player_no) == g.current_turn:
+        board.remove_ruler(board.get_cell_no_for_player_no_and_ruler(player_no, ruler[0]))
+    else: False
+
+    g.save()
+    board.save()
+
+    return internal_attack(request, game_id, player_no, cell_no, ruler, num_committed)
+
 def reposition_ruler(request, game_id, player_no, ruler, cell):
     cell = int(cell)
 
