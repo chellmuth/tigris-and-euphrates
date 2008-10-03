@@ -286,7 +286,6 @@ function set_rulers(player_no, ruler_group) {
 
     var ruler_key = "ruler-" + ruler + "-" + player_no;
     if(cell_no != -1) {
-
       $("#" + ruler_key).show().appendTo("#drop" + cell_no).addClass("placed");
 
       if(use_sidebar) {
@@ -794,12 +793,12 @@ function call_json() {
         </div>
         <div class="rulers" style="float:left;">
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/3-Temple.png">
-                <img width="40" height="40" src="/media/pieces/rulers/3-Settlement.png">
+                <img id="sidebar-3-temple" width="40" height="40" src="/media/pieces/rulers/3-Temple.png">
+                <img id="sidebar-3-settlement" width="40" height="40" src="/media/pieces/rulers/3-Settlement.png">
             </div>
             <div>
-                <img width="40" height="40" src="/media/pieces/rulers/3-Merchant.png">
-                <img width="40" height="40" src="/media/pieces/rulers/3-Farm.png">
+                <img id="sidebar-3-merchant" width="40" height="40" src="/media/pieces/rulers/3-Merchant.png">
+                <img id="sidebar-3-farm" width="40" height="40" src="/media/pieces/rulers/3-Farm.png">
             </div>
         </div>
         <div class="civs" style="float:left;">
