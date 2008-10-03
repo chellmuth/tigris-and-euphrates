@@ -17,6 +17,16 @@
 
 {{ board_css }}
 
+#trashcan {
+  width: 30px;
+  height: 30px;
+  background-image: url(/media/board/trashcan.png);
+}
+
+.trash {
+  background-image: url(/media/board/X.png);
+}
+
 .cell-ground {
   border: 2px solid #3C3251;
   background-color: #A38322;
@@ -524,6 +534,38 @@ function call_json() {
     $("#hand4").draggable({revert: true});
     $("#hand5").draggable({revert: true});
 
+    $("#trashcan").bind(
+      "click",
+      function (e) {
+        var url = '';
+        $.each(
+          [0, 1, 2, 3, 4, 5],
+          function(no, item) {
+            url += $("#hand" + no).hasClass('trash') ? '1' : '0'
+          }
+        );
+        if (url == '000000') {
+          return;
+        }
+
+        $.getJSON("/drop_tiles/{{ game_id }}/{{ player_no }}/" + url + "/",
+                  function (data) { json_callback(data); });
+      }
+    );
+
+    $("#hand0, #hand1, #hand2, #hand3, #hand4, #hand5").bind(
+      "dblclick",
+      function (e) {
+        $(this).toggleClass('trash');
+        if ($(this).hasClass('trash')) {
+          $(this).draggable('disable');
+        }
+        else {
+          $(this).draggable('enable');
+        }
+      }
+    );
+
     $("#ruler-settlement-{{ player_no }}").draggable({revert: true});
     $("#ruler-farm-{{ player_no }}").draggable({revert: true});
     $("#ruler-merchant-{{ player_no }}").draggable({revert: true});
@@ -671,6 +713,8 @@ function call_json() {
             <div id="hand3" style="float:left;" class="piece civ-merchant"></div>
             <div id="hand4" style="float:left;" class="piece"></div>
             <div id="hand5" style="float:left;" class="piece"></div>
+        </div>
+        <div id="trashcan" style="float:left;">
         </div>
         <div style="margin-left:20px; float:left;" id="player_rulers">
             <div style="float:left;" id="ruler-settlement-{{ player_no }}-bin"></div>

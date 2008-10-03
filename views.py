@@ -29,6 +29,27 @@ def _convert_ruler(str, player_no):
     if str[0] == 't':
         return TempleRuler(player_no)
 
+def drop_tiles(request, game_id, player_no, tile0, tile1, tile2, tile3, tile4, tile5):
+    g = Game.objects.get(id=int(game_id))
+    p = g.__getattribute__('player_' + player_no)
+    hand = Hand.objects.filter(player=p, turn_no=1, game=g).get()
+
+    if not g.current_turn == int(player_no):
+        return False
+    if not g.state == 'REGULAR':
+        return False
+
+    for num, val in enumerate([tile0, tile1, tile2, tile3, tile4, tile5]):
+        if int(val) == 1:
+            hand.swap(num)
+
+    hand.save()
+
+    g.increment_action()
+    g.save()
+
+    return game_state_json(request, game_id, player_no)
+
 def choose_treasure(request, game_id, player_no, cell_nos):
     cell_nos = [ int(x) for x in cell_nos.split("_") ]
 
