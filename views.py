@@ -275,7 +275,7 @@ def create_game(request):
     })
 
 def _setup_game(name, players, num_players):
-    player_objs = dict([ ('player_' + str(player_no + 1), Player.objects.create(user_name=players[player_no])) for player_no in xrange(num_players) ])
+    player_objs = dict([ ('player_' + str(player_no + 1), Player.objects.get_or_create(user_name=players[player_no])[0]) for player_no in xrange(num_players) ])
     game = Game.objects.create(num_players=num_players, name=name, **player_objs)
 
     bag = CivBag.objects.create(game=game)
