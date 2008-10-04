@@ -97,6 +97,7 @@ class Hand(models.Model):
 
     def batch_remove(self, civ, count):
         count = int(count)
+        if count is 0: return True
         if self.count(civ) < count: return False
 
         for index, piece in enumerate(self.pieces()):
