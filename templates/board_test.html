@@ -522,6 +522,7 @@ function call_json() {
 
   $(document).ready(function(){
     call_json();
+    var id = setInterval(call_json, 20000);
 
     for(var i={{ num_players }} + 1; i<= 4; i++) {
       $("#status_player_" + i).hide();
