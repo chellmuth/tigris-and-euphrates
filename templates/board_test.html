@@ -327,6 +327,9 @@ function add_treasure_to_cell(cell_no, is_corner) {
 
 function setmode(type) {
   if (type == 'CHOOSE_COLOR') {
+    if ($("#choose_battle").dialog("isOpen")) {
+      return;
+    }
     button_colors = {};
     $.each(state['war_choices'], function(i, civ) {
       button_colors[civ] = function() {
@@ -334,7 +337,7 @@ function setmode(type) {
         $(this).dialog("destroy");
       }
     });
-    $("#choose_battle").dialog({
+    $("#choose_battle").show().dialog({
        dialogClass: "flora",
        buttons: button_colors,
        draggable: true,
@@ -344,6 +347,9 @@ function setmode(type) {
   }
   //XXX code duplication
   else if (type.match(/^ATTACK/)) {
+    if ($("#commit_choices").dialog("isOpen")) {
+      return;
+    }
     button_choices = [];
 
     // had some problems with closures using for-loop variables
@@ -359,7 +365,7 @@ function setmode(type) {
       }});
 
     $("#commit_choices").html("You have "+state['attack']['attack_board'].length+" tiles on the board</br>Your opponent has "+state['attack']['defend_board'].length+" tiles on the board</br>You have "+state['attack']['tiles_available']+" tiles in your hand you can contribute" );
-    $("#commit_choices").dialog({
+    $("#commit_choices").show().dialog({
        dialogClass: "flora",
        buttons: button_choices,
        draggable: true,
@@ -368,6 +374,10 @@ function setmode(type) {
     });
   }
   else if (type.match(/^DEFEND/)) {
+    if ($("#commit_choices").dialog('isOpen')) {
+      return;
+    }
+
     button_choices = [];
 
     // had some problems with closures using for-loop variables
@@ -383,7 +393,7 @@ function setmode(type) {
       }});
 
     $("#commit_choices").html("You have "+state['defend']['defend_board'].length+" tiles on the board</br>Your opponent has "+state['defend']['attack_board'].length+" + "+state['defend']['attack_committed']+" tiles</br>You have "+state['defend']['tiles_available']+" tiles in your hand you can contribute" );
-    $("#commit_choices").dialog({
+    $("#commit_choices").show().dialog({
        dialogClass: "flora",
        buttons: button_choices,
        draggable: true,
@@ -392,6 +402,9 @@ function setmode(type) {
     });
   }
   else if (type.match(/^INTERNAL/)) {
+    if ($("#commit_choices").dialog("isOpen")) {
+      return;
+    }
     button_choices = [];
 
     // had some problems with closures using for-loop variables
@@ -407,7 +420,7 @@ function setmode(type) {
       }});
 
     $("#commit_choices").html("You have "+state['defend_internal']['defend_board']+" tiles on the board</br>Your opponent has "+state['defend_internal']['attack_board']+" + "+state['defend_internal']['attack_committed']+" tiles</br>You have "+state['defend_internal']['tiles_available']+" tiles in your hand you can contribute" );
-    $("#commit_choices").dialog({
+    $("#commit_choices").show().dialog({
        dialogClass: "flora",
        buttons: button_choices,
        draggable: true,
@@ -419,19 +432,21 @@ function setmode(type) {
     set_draggables(false);
     $.each(state['treasure_info']['can_choose'],
            function(i, cell_no) {
-             $("#drop" + cell_no).bind("click", function(e) {
-                                                  var total_treasure = state['treasure_info']['must_choose'].length +
-                                                                       state['treasure_info']['num_choose'];
-                                                  if ($(this).hasClass('selected-treasure')) {
-                                                    $(this).removeClass('selected-treasure');
-                                                  }
-                                                  else {
-                                                    if (total_treasure > $(".selected-treasure").length) {
-                                                      $(this).addClass('selected-treasure');
-                                                      check_selected_treasure();
-                                                    }
-                                                  }
-                                                });
+             $("#drop" + cell_no).bind(
+                 "click",
+                 function(e) {
+                   var total_treasure = state['treasure_info']['must_choose'].length +
+                                        state['treasure_info']['num_choose'];
+                   if ($(this).hasClass('selected-treasure')) {
+                     $(this).removeClass('selected-treasure');
+                   }
+                   else {
+                     if (total_treasure > $(".selected-treasure").length) {
+                       $(this).addClass('selected-treasure');
+                       check_selected_treasure();
+                     }
+                   }
+                 });
            });
     $.each(state['treasure_info']['must_choose'],
            function(i, cell_no) {
@@ -445,9 +460,14 @@ function check_selected_treasure() {
   var total_treasure = state['treasure_info']['must_choose'].length +
                        state['treasure_info']['num_choose'];
   if (total_treasure == $(".selected-treasure").length) {
+    if ($("#confirm_treasure").dialog("isOpen")) {
+      return;
+    }
+
     var button_choices = {};
     button_choices['yes'] = function() {
       $.getJSON("/choose_treasure/{{ game_id }}/{{ player_no }}/" + jquery_to_list($(".selected-treasure")) + "/", function (data) { json_callback(data); });
+      set_draggables(true);
       $(this).dialog("destroy");
     };
 
@@ -455,7 +475,7 @@ function check_selected_treasure() {
       $(this).dialog("destroy");
     };
 
-    $("#confirm_treasure").dialog({
+    $("#confirm_treasure").show().dialog({
        dialogClass: "flora",
        buttons: button_choices,
        draggable: true,
@@ -608,7 +628,11 @@ function call_json() {
                 $.getJSON("/drop_civ/{{ game_id }}/{{ player_no }}/" + piece + "/" + cell_no + "/", function (data) { json_callback(data); });
              }
              else if (war_index >= 0) {
-                $("#external_confirm").dialog({
+                if ($("#external_confirm").dialog('isOpen')) {
+                  return;
+                }
+
+                $("#external_confirm").show().dialog({
                    dialogClass: "flora",
                    buttons: {
                      "LET'S DO THIS": function() {
@@ -666,6 +690,10 @@ function call_json() {
   });
 
   function confirm_internal_battle(cell_no, civ_type, attack_board, tiles_available, defend_board, is_reposition) {
+    if ($("#commit_choices").dialog("isOpen")) {
+      return;
+    }
+
     var url = is_reposition ? 'reposition_ruler_war' : 'internal_attack';
     button_choices = {};
 
@@ -685,7 +713,7 @@ function call_json() {
     };
 
     $("#commit_choices").html("You have "+attack_board+" tiles on the board</br>Your opponent has "+defend_board+" tiles</br>You have "+tiles_available+" tiles in your hand you can contribute");
-    $("#commit_choices").dialog({
+    $("#commit_choices").show().dialog({
        dialogClass: "flora",
        buttons: button_choices,
        draggable: true,
