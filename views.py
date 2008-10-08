@@ -9,6 +9,10 @@ from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, Set
 from game.board.cell import Ground
 from tigris.forms import GameCreateForm
 
+def update_browsers():
+    from tigris_stomper import start
+    start('update from view')
+
 def _convert(str):
     if str[0] == 's':
         return SettlementCiv()
@@ -48,6 +52,8 @@ def drop_tiles(request, game_id, player_no, tile0, tile1, tile2, tile3, tile4, t
     g.increment_action()
     g.save()
 
+    update_browsers()
+
     return game_state_json(request, game_id, player_no)
 
 def choose_treasure(request, game_id, player_no, cell_nos):
@@ -67,6 +73,8 @@ def choose_treasure(request, game_id, player_no, cell_nos):
     g.save()
 
     board.save()
+
+    update_browsers()
 
     return game_state_json(request, game_id, player_no)
 
@@ -104,6 +112,8 @@ def internal_defend(request, game_id, player_no, num_committed):
     g.save()
     board.save()
 
+    update_browsers()
+
     return game_state_json(request, game_id, player_no)
 
 def _give_points(game, player_no, count, type):
@@ -133,6 +143,8 @@ def internal_attack(request, game_id, player_no, cell_no, civ, num_committed):
 
     g.save()
     board.save()
+
+    update_browsers()
 
     return game_state_json(request, game_id, player_no)
 
@@ -188,6 +200,8 @@ def defend_commit(request, game_id, player_no, tile_count):
     g.save()
     board.save()
 
+    update_browsers()
+
     return game_state_json(request, game_id, player_no)
 
 def attack_commit(request, game_id, player_no, tile_count):
@@ -210,6 +224,8 @@ def attack_commit(request, game_id, player_no, tile_count):
     g.waiting_for = _get_defender(g, board)
     g.save()
 
+    update_browsers()
+
     return game_state_json(request, game_id, player_no)
 
 def choose_color(request, game_id, player_no, civ):
@@ -224,6 +240,8 @@ def choose_color(request, game_id, player_no, civ):
     g.waiting_for = _get_attacker(g, board)
 
     g.save()
+
+    update_browsers()
 
     return game_state_json(request, game_id, player_no)
 
@@ -257,6 +275,8 @@ def external_war(request, game_id, player_no, civ, cell):
 
     board.save()
     hand.save()
+
+    update_browsers()
 
     return game_state_json(request, game_id,player_no)
 
@@ -311,6 +331,8 @@ def remove_ruler(request, game_id, player_no, ruler):
 
     g.save()
     board.save()
+
+    update_browsers()
 
     return game_state_json(request, game_id, player_no)
 
@@ -367,6 +389,8 @@ def drop_ruler(request, game_id, player_no, ruler, cell):
     g.save()
     board.save()
 
+    update_browsers()
+
     return game_state_json(request, game_id, player_no)
 
 def drop_civ(request, game_id, player_no, civ, cell):
@@ -412,6 +436,8 @@ def drop_civ(request, game_id, player_no, civ, cell):
 
     g.save()
     board.save()
+
+    update_browsers()
 
     return game_state_json(request, game_id,player_no)
 

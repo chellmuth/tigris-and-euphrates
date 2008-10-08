@@ -1,6 +1,6 @@
 <html>
 <head>
-
+<script>document.domain=document.domain;</script>
 <link rel="stylesheet" type="text/css" href="/media/css/flora.dialog.css" />
 <link rel="stylesheet" type="text/css" href="/media/css/ui.css" />
 
@@ -9,6 +9,15 @@
 <script type="text/javascript" src="/media/js/ui.dialog.js"></script>
 <script type="text/javascript" src="/media/js/ui.draggable.js"></script>
 <script type="text/javascript" src="/media/js/ui.droppable.js"></script>
+
+<script type="text/javascript" src="/media/js/protocols/Orbited.js"></script>
+<script>
+        TCPSocket = Orbited.TCPSocket;
+        Orbited.settings.port = 8000;
+        Orbited.settings.hostname = 'manatee.local'
+</script>
+<script type="text/javascript" src="/media/js/protocols/stomp.js"></script>
+
 
 <style>
 {% for css in css_classes %}
@@ -540,13 +549,47 @@ function set_draggables(enable)
   $("#ruler-temple-{{ player_no }}").draggable(str);
 }
 
+function setup_stomp() {
+  // This code is mostly lifted from the stomp demo.
+
+  // set up stomp client.
+  stomp = new STOMPClient();
+  stomp.onopen = function() {
+
+  };
+  stomp.onclose = function(code) {
+
+  };
+  stomp.onerror = function(error) {
+      alert("onerror: " + error);
+  };
+  stomp.onerrorframe = function(frame) {
+      alert("onerrorframe: " + frame.body);
+  };
+  stomp.onconnectedframe = function() {
+      stomp.subscribe('/home/cjh',
+                      {exchange:''}
+                     );
+
+  };
+  stomp.onmessageframe = function(frame) {
+      call_json();
+  };
+
+  stomp.connect('localhost',
+                 61613,
+                 '{{ game_id }}-{{ player_no }}',
+                 'testpw'
+               );
+}
+
 function call_json() {
   $.getJSON("/game_state_json/{{ game_id }}/{{ player_no }}/", function (data) { json_callback(data); });
 }
 
   $(document).ready(function(){
+    setup_stomp();
     call_json();
-    var id = setInterval(call_json, 20000);
 
     for(var i={{ num_players }} + 1; i<= 4; i++) {
       $("#status_player_" + i).hide();
