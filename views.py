@@ -26,8 +26,12 @@ def chat(request, game_id, player_no, chat_id):
     return get_chat(request, game_id, chat_id)
 
 def get_chat(request, game_id, chat_id):
-    chats = Chat.objects.filter(id__gt=chat_id).order_by('id')
-    json_obj = { "chats": [ c.message for c in chats if c.game.id == int(game_id) ], "old_chat_id": int(chat_id), "new_chat_id": int(chats[len(chats)-1].id) }
+    chats = Chat.objects.filter(game__id=game_id).filter(id__gt=chat_id).order_by('id')
+    json_obj = {
+        "chats": [ c.message for c in chats ],
+        "old_chat_id": int(chat_id),
+        "new_chat_id": len(chats) > 0 and int(chats[len(chats)-1].id) or int(chat_id)
+    }
 
     resp = HttpResponse(simplejson.dumps(json_obj, indent=2))
     resp.headers['Content-Type'] = 'text/javascript'
