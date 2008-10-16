@@ -572,7 +572,7 @@ function setup_stomp() {
 
   };
   stomp.onclose = function(code) {
-      alert("trying to reconnect...");
+      // alert("trying to reconnect...");
       stomp.subscribe(
         '/home/cjh/{{ game_id }}',
         {exchange:''}
