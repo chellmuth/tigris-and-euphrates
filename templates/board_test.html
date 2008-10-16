@@ -53,6 +53,10 @@
 }
 
 #chat-window {
+  height: 580px;
+}
+
+#chat-container {
   position: absolute;
   top: -71px;
   left: 810px;
@@ -956,11 +960,8 @@ function call_json() {
 <div id="commit_choices" title="Choose Number of Tiles!">How many tiles to contribute?</div>
 <div id="confirm_treasure">Would you like to choose these treasures?</div>
 
-<div id="chat-window">
-    <form action="javascript: chat_submit();">
-        <input id="chat-text" type="text" name="chat" />
-        <input id="chat-submit" value="Chat" type="submit" name="Submit" />
-    </form>
+<div id="chat-container">
+    <div id="chat-window" style="overflow:auto;">
         <script>
             var cur_chat_id = 0;
             function chat_submit() {
@@ -969,6 +970,7 @@ function call_json() {
                  { 'chat': $("#chat-text").val() },
                  parse_chat
               );
+              $("#chat-text").val('');
             }
 
             function parse_chat(data) {
@@ -978,12 +980,17 @@ function call_json() {
               }
               $.each(data['chats'], function(i, chat) { $("#chat-window").append(chat + "<br />"); });
               cur_chat_id = data['new_chat_id'];
+              $('#chat-window').attr({ scrollTop: $('#chat-window').attr('scrollHeight') });
             }
-
         </script>
-    </form>
+    </div>
+    <div id="chat-input">
+        <form action="javascript: chat_submit();">
+            <input id="chat-text" type="text" name="chat" />
+            <input id="chat-submit" value="Chat" type="submit" name="Submit" />
+        </form>
+    </div>
 </div>
-
 </div>
 
 <div id="ruler-bin">
