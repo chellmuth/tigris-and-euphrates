@@ -2,16 +2,41 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import simplejson
 
-from game.models import Game, CivBag, Hand, Player
+from game.models import Game, CivBag, Hand, Player, Chat
 from game.board import StandardBoard, build_board_data
 from game.board import split_legal_moves_by_type, safe_tile, safe_ruler, external_war_tile, internal_war_ruler
 from game.board.piece import SettlementCiv, FarmCiv, TempleCiv, MerchantCiv, SettlementRuler, FarmRuler, TempleRuler, MerchantRuler
 from game.board.cell import Ground
 from tigris.forms import GameCreateForm
 
-def update_browsers():
+def chat(request, game_id, player_no, chat_id):
+    g = Game.objects.get(id=int(game_id))
+    p = g.__getattribute__('player_' + player_no)
+
+    chat = Chat.objects.create(game=g, player=p)
+    body = 'nothing to see here'
+    if request.has_key('chat'):
+        body = request['chat']
+
+    chat.message=p.user_name + ': ' + body
+    chat.save()
+
+    update_browsers(game_id)
+
+    return get_chat(request, game_id, chat_id)
+
+def get_chat(request, game_id, chat_id):
+    chats = Chat.objects.filter(id__gt=chat_id).order_by('id')
+    json_obj = { "chats": [ c.message for c in chats if c.game.id == int(game_id) ], "old_chat_id": int(chat_id), "new_chat_id": int(chats[len(chats)-1].id) }
+
+    resp = HttpResponse(simplejson.dumps(json_obj, indent=2))
+    resp.headers['Content-Type'] = 'text/javascript'
+
+    return resp
+
+def update_browsers(game_id):
     from tigris_stomper import start
-    start('update from view')
+    start(game_id)
 
 def _convert(str):
     if str[0] == 's':
@@ -52,7 +77,7 @@ def drop_tiles(request, game_id, player_no, tile0, tile1, tile2, tile3, tile4, t
     g.increment_action()
     g.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -74,7 +99,7 @@ def choose_treasure(request, game_id, player_no, cell_nos):
 
     board.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -112,7 +137,7 @@ def internal_defend(request, game_id, player_no, num_committed):
     g.save()
     board.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -144,7 +169,7 @@ def internal_attack(request, game_id, player_no, cell_no, civ, num_committed):
     g.save()
     board.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -200,7 +225,7 @@ def defend_commit(request, game_id, player_no, tile_count):
     g.save()
     board.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -224,7 +249,7 @@ def attack_commit(request, game_id, player_no, tile_count):
     g.waiting_for = _get_defender(g, board)
     g.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -241,7 +266,7 @@ def choose_color(request, game_id, player_no, civ):
 
     g.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -276,7 +301,7 @@ def external_war(request, game_id, player_no, civ, cell):
     board.save()
     hand.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id,player_no)
 
@@ -332,7 +357,7 @@ def remove_ruler(request, game_id, player_no, ruler):
     g.save()
     board.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -389,7 +414,7 @@ def drop_ruler(request, game_id, player_no, ruler, cell):
     g.save()
     board.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id, player_no)
 
@@ -437,7 +462,7 @@ def drop_civ(request, game_id, player_no, civ, cell):
     g.save()
     board.save()
 
-    update_browsers()
+    update_browsers(game_id)
 
     return game_state_json(request, game_id,player_no)
 

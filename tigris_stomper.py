@@ -10,12 +10,11 @@ import stomper
 
 stomper.utils.log_init(logging.DEBUG)
 
-DESTINATION="/home/cjh"
-
 class StompProtocol(Protocol, stomper.Engine):
 
-    def __init__(self, message='', username='', password=''):
+    def __init__(self, channel='', message='', username='', password=''):
         stomper.Engine.__init__(self)
+        self.channel = channel
         self.message = message
         self.username = username
         self.password = password
@@ -35,7 +34,7 @@ class StompProtocol(Protocol, stomper.Engine):
         self.send("WHY HELLO!")
 
         f = stomper.Frame()
-        f.unpack(stomper.subscribe(DESTINATION))
+        f.unpack(stomper.subscribe(self.channel))
 
         # ActiveMQ specific headers:
         #
@@ -60,7 +59,7 @@ class StompProtocol(Protocol, stomper.Engine):
         self.log.info("Saying hello (%d)." % self.counter)
 
         f = stomper.Frame()
-        f.unpack(stomper.send(DESTINATION, self.message))
+        f.unpack(stomper.send(self.channel, self.message))
 
         self.counter += 1
 
@@ -94,8 +93,7 @@ class StompClientFactory(ReconnectingClientFactory):
     username, password, message = '', '', ''
 
     def buildProtocol(self, addr):
-        return StompProtocol(self.message, self.username, self.password)
-
+        return StompProtocol(self.channel, self.message, self.username, self.password)
 
     def clientConnectionLost(self, connector, reason):
         """Lost connection
@@ -110,12 +108,13 @@ class StompClientFactory(ReconnectingClientFactory):
         ReconnectingClientFactory.clientConnectionFailed(self, connector, reason)
         reactor.stop()
 
-def start(message, host='localhost', port=61613, username='', password=''):
+def start(game_id, host='localhost', port=61613, username='', password=''):
     """Start twisted event loop and the fun should begin...
     """
     StompClientFactory.username = username
     StompClientFactory.password = password
-    StompClientFactory.message = message
+    StompClientFactory.message = 'message'
+    StompClientFactory.channel = '/home/cjh/' + game_id
 
     reactor.connectTCP(host, port, StompClientFactory())
     reactor.run()

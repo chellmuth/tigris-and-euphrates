@@ -52,6 +52,16 @@
    background-color: yellow;
 }
 
+#chat-window {
+  position: absolute;
+  top: -71px;
+  left: 810px;
+  width: 275px;
+  height: 619px;
+  border: 3px solid #3C3251;
+  background: #FFED90;
+}
+
 #board {
   position: absolute;
   top: {{ board_start_y }}px;
@@ -558,7 +568,11 @@ function setup_stomp() {
 
   };
   stomp.onclose = function(code) {
-
+      alert("trying to reconnect...");
+      stomp.subscribe(
+        '/home/cjh/{{ game_id }}',
+        {exchange:''}
+      );
   };
   stomp.onerror = function(error) {
       alert("onerror: " + error);
@@ -567,20 +581,25 @@ function setup_stomp() {
       alert("onerrorframe: " + frame.body);
   };
   stomp.onconnectedframe = function() {
-      stomp.subscribe('/home/cjh',
-                      {exchange:''}
-                     );
-
+      stomp.subscribe(
+        '/home/cjh/{{ game_id }}',
+        {exchange:''}
+      );
   };
   stomp.onmessageframe = function(frame) {
       call_json();
+      $.getJSON(
+        '/get_chat/{{ game_id }}/' + cur_chat_id + '/',
+        parse_chat
+      );
   };
 
-  stomp.connect('localhost',
-                 61613,
-                 '{{ game_id }}-{{ player_no }}',
-                 'testpw'
-               );
+  stomp.connect(
+    'localhost',
+    61613,
+    '{{ game_id }}-{{ player_no }}',
+    'testpw'
+  );
 }
 
 function call_json() {
@@ -590,6 +609,11 @@ function call_json() {
   $(document).ready(function(){
     setup_stomp();
     call_json();
+
+    $.getJSON(
+      '/get_chat/{{ game_id }}/0/',
+      parse_chat
+    );
 
     for(var i={{ num_players }} + 1; i<= 4; i++) {
       $("#status_player_" + i).hide();
@@ -931,6 +955,34 @@ function call_json() {
 <div id="choose_battle" title="Choose Color!">Choose the color for the next battle</div>
 <div id="commit_choices" title="Choose Number of Tiles!">How many tiles to contribute?</div>
 <div id="confirm_treasure">Would you like to choose these treasures?</div>
+
+<div id="chat-window">
+    <form action="javascript: chat_submit();">
+        <input id="chat-text" type="text" name="chat" />
+        <input id="chat-submit" value="Chat" type="submit" name="Submit" />
+    </form>
+        <script>
+            var cur_chat_id = 0;
+            function chat_submit() {
+              $.getJSON(
+                '/chat/{{ game_id }}/{{ player_no }}/' + cur_chat_id + '/',
+                 { 'chat': $("#chat-text").val() },
+                 parse_chat
+              );
+            }
+
+            function parse_chat(data) {
+              if (data['old_chat_id'] != cur_chat_id) {
+                // XXX should iterate over the diff too lazy to implement though.
+                return;
+              }
+              $.each(data['chats'], function(i, chat) { $("#chat-window").append(chat + "<br />"); });
+              cur_chat_id = data['new_chat_id'];
+            }
+
+        </script>
+    </form>
+</div>
 
 </div>
 

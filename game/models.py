@@ -166,3 +166,9 @@ class CivBag(models.Model):
             return TempleCiv(self.temple_start - self.temple_remaining - 1)
 
         assert(0)
+
+class Chat(models.Model):
+    message = models.CharField(maxlength=100)
+    game = models.ForeignKey(Game)
+    player = models.ForeignKey(Player)
+    time = models.DateTimeField(auto_now_add=True)
