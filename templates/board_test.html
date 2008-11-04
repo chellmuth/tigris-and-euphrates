@@ -33,7 +33,10 @@
 }
 
 .trash {
+  width: 50px;
+  height: 50px;
   background-image: url(/media/board/X.png);
+  z-index:100;
 }
 
 .cell-ground {
@@ -636,7 +639,7 @@ function call_json() {
         $.each(
           [0, 1, 2, 3, 4, 5],
           function(no, item) {
-            url += $("#hand" + no).hasClass('trash') ? '1' : '0'
+            url += $("#hand" + no + "> .trash").length > 0 ? '1' : '0'
           }
         );
         if (url == '000000') {
@@ -651,8 +654,8 @@ function call_json() {
     $("#hand0, #hand1, #hand2, #hand3, #hand4, #hand5").bind(
       "dblclick",
       function (e) {
-        $(this).toggleClass('trash');
-        if ($(this).hasClass('trash')) {
+        $(this).children().toggleClass('trash');
+        if ($(this).children().hasClass('trash')) {
           $(this).draggable('disable');
         }
         else {
@@ -810,12 +813,12 @@ function call_json() {
             </div>
         </div>
         <div style="margin-left:50px; float:left;" id="player_hand">
-            <div id="hand0" style="float:left;" class="piece civ-settlement"></div>
-            <div id="hand1" style="float:left;" class="piece civ-temple"></div>
-            <div id="hand2" style="float:left;" class="piece civ-farm"></div>
-            <div id="hand3" style="float:left;" class="piece civ-merchant"></div>
-            <div id="hand4" style="float:left;" class="piece"></div>
-            <div id="hand5" style="float:left;" class="piece"></div>
+            <div id="hand0" style="float:left;" class="piece civ-settlement"><div id="trash0"></div></div>
+            <div id="hand1" style="float:left;" class="piece civ-temple"><div id="trash1"></div></div>
+            <div id="hand2" style="float:left;" class="piece civ-farm"><div id="trash2"></div></div>
+            <div id="hand3" style="float:left;" class="piece civ-merchant"><div id="trash3"></div></div>
+            <div id="hand4" style="float:left;" class="piece"><div id="trash4"></div></div>
+            <div id="hand5" style="float:left;" class="piece"><div id="trash5"></div></div>
         </div>
         <div id="trashcan" style="float:left;">
         </div>
