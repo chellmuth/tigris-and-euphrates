@@ -274,6 +274,15 @@ function json_callback(data) {
   $("#ruler-temple #ruler-settlement #ruler-merchant #ruler-farm").show();
   state = data;
 
+  if (data['empty_trash']) {
+    $.each(
+      [0, 1, 2, 3, 4, 5],
+      function(no, item) {
+        $("#hand" + no).children().removeClass('trash');
+      }
+    );
+  }
+
   $.each(data['player_hand'], function(i, item) { set_civilization_tiles(i, item); });
   $.each(data['temple_civ'], function(i, cell_no) { place_civ_on_board('civ-temple', cell_no); });
   $.each(data['settlement_civ'], function(i, cell_no) { place_civ_on_board('civ-settlement', cell_no); });

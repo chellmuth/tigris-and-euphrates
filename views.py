@@ -83,7 +83,7 @@ def drop_tiles(request, game_id, player_no, tile0, tile1, tile2, tile3, tile4, t
 
     update_browsers(game_id)
 
-    return game_state_json(request, game_id, player_no)
+    return game_state_json(request, game_id, player_no, { 'empty_trash': 1 })
 
 def choose_treasure(request, game_id, player_no, cell_nos):
     cell_nos = [ int(x) for x in cell_nos.split("_") ]
@@ -545,7 +545,7 @@ def _get_reposition_info(board, player_no, ruler_type):
 
     return safe, war
 
-def game_state_json(request, game_id, player_no):
+def game_state_json(request, game_id, player_no, options={}):
     g = Game.objects.get(id=int(game_id))
     board = StandardBoard(g,1)
     build_board_data(board)
@@ -674,6 +674,7 @@ def game_state_json(request, game_id, player_no):
                           for player_no in xrange(1, g.num_players + 1) ]),
    "state": state
    }
+    json_obj.update(options)
 
     resp = HttpResponse(simplejson.dumps(json_obj, indent=2))
     resp.headers['Content-Type'] = 'text/javascript'
